@@ -1,6 +1,7 @@
 var fs = require('fs');
 var Stream = require('stream');
 var lexer = require("./lexer");
+var Q = require('q');
 
 
 Array.prototype.peek = function() {
@@ -31,8 +32,13 @@ function parseStream(stream) {
 	});
 }
 
-var stack = [];
+
+module.exports.parse = parse;
 function parse(text) {
+	var toR = Q.defer();
+
+	var stack = [];
+
 	var tokens = [];
 	var emit = function(t) {
 		tokens.push(t);
@@ -42,20 +48,24 @@ function parse(text) {
 
 
 	for (var i = 0; i < tokens.length; i++) {
-		console.log("Shifting " + tokens[i]);
+		console.log("Shifting " + tokens[i].type);
 		stack.push(tokens[i]);
 		console.log(stack);
 		console.log("Reducing...");
-		while (reduce()) {
+		while (reduce(stack)) {
 			console.log(stack);
 			console.log("Reducing...");
 		}
 
 	}
+
+	toR.resolve(compileOST(stack[0]));
+	return toR.promise;
 }
 
-function reduce() {
+function reduce(stack) {
 	var next = stack.pop();
+
 
 	if (is(next, "key") && next.value == "true") {
 		console.log("Rule 5");
@@ -64,9 +74,8 @@ function reduce() {
 	}
 
 
-	if (is(stack.peek(), "key") && stack.peek().value == "false") {
+	if (is(next, "key") && next.value == "false") {
 		console.log("Rule 6");
-		stack.pop();
 		stack.push({'type': "boolean", 'value': "false"});
 		return true;
 	}
@@ -80,7 +89,7 @@ function reduce() {
 
 	if (is(next, "int") && is(stack.peek(), "key")) {
 		console.log("Rule 11b");
-		stack.peek().value += next.value.join("");
+		stack.peek().value += next.value;
 		return true;
 	}
 
@@ -93,7 +102,7 @@ function reduce() {
 	if (is(next, "quote")) {
 		console.log("Rule 11d");
 		next.type = "value";
-		next.value = next.value.join("");
+		next.value = next.value;
 		stack.push(next);
 		return true;
 	}
@@ -101,7 +110,6 @@ function reduce() {
 	if (is(next, "boolean")) {
 		console.log("Rule 11e");
 		next.type = "value";
-		next.value = next.value.join("");
 
 		if (next.value == "true") {
 			next.value = true;
@@ -116,7 +124,6 @@ function reduce() {
 	if(is(next, "int")) {
 		console.log("Rule 11f");
 		next.type = "value";
-		next.value = parseInt(next.value.join(""));
 		stack.push(next);
 		return true;
 	}
@@ -124,7 +131,6 @@ function reduce() {
 	if (is(next, "float")) {
 		console.log("Rule 11g");
 		next.type = "value";
-		next.value = parseFloat(next.value.join(""));
 		stack.push(next);
 		return true;
 	}
@@ -135,6 +141,22 @@ function reduce() {
 		next.type = "cvalue";
 		stack.pop();
 		stack.push(next);
+		return true;
+	}
+
+	if (is(next, "list") && is(stack.peek(), "comma")) {
+		console.log("Rule 12a");
+		next.type = "cvalue";
+		stack.pop();
+		stack.push(next);
+		return true;
+	}
+
+	if (is(next, "obj") && is(stack.peek(), "comma")) {
+		console.log("Rule 12b");
+		var toPush = {'type': 'cvalue', 'value': next};
+		stack.pop();
+		stack.push(toPush);
 		return true;
 	}
 
@@ -156,9 +178,9 @@ function reduce() {
 
 	if (is(next, "obj") && is(stack.peek(), "colon")) {
 		console.log("Rule 13b");
-		next.type = "covalue";
+		var toPush = {'type': "covalue", 'value': next};
 		stack.pop();
-		stack.push(next);
+		stack.push(toPush);
 		return true;
 	}
 	
@@ -182,6 +204,22 @@ function reduce() {
 		return true;
 	}
 
+	if (is(next, "VList") && is(stack.peek(), "list")) {
+		console.log("Rule 15b");
+		next.value.unshift(stack.peek().value);
+		stack.pop();
+		stack.push(next);
+		return true;
+	}
+
+	if (is(next, "VList") && is(stack.peek(), "obj")) {
+		console.log("Rule 15c");
+		next.value.unshift(stack.peek());
+		stack.pop();
+		stack.push(next);
+		return true;
+	}
+
 	if (is(next, "covalue") && is(stack.peek(), "key")) {
 		console.log("Rule 16");
 		var key = stack.pop();
@@ -189,10 +227,35 @@ function reduce() {
 		return true;
 	}
 
+	if (is(next, "covalue") && is(stack.peek(), "value")) {
+		console.log("Rule 16a");
+		var key = stack.pop();
+		stack.push({'type': 'KV', 'key': key.value, 'value': next.value});
+		return true;
+	}
+
+	if (is(next, "covalue") && is(stack.peek(), "VList")) {
+		console.log("Rule 16b");
+		var key = stack.pop();
+		key.value.forEach(function (i) {
+			stack.push({'type': 'KV', 'key': i, 'value': next.value});
+		});
+		return true;
+	}
+
 	if (is(next, "KV") && is(stack.last(0), "comma") && is(stack.last(1), "KVList")) {
 		console.log("Rule 17");
 		stack.last(1).value.push(next);
 		stack.pop();
+		return true;
+	}
+
+	if (is(next, "KVList") && is(stack.peek(), "KVList")) {
+		console.log("Rule 17a");
+		next.value.forEach(function (i) {
+			stack.peek().value.push(i);
+		});
+
 		return true;
 	}
 
@@ -219,24 +282,55 @@ function reduce() {
 		return true;
 	}
 
+	if (is(next, "rcb") && is(stack.peek(), "lcb")) {
+		console.log("Rule 21");
+		stack.pop();
+		stack.push({type: 'obj', 'value': null});
+		return true;
+	}
+
+	if (is(next, "rb") && is(stack.peek(), "lb")) {
+		console.log("Rule 22");
+		stack.pop();
+		stack.push({type: 'list', 'value': []});
+		return true;
+	}
+
+	if (is(next, "rb") && is(stack.peek(), "value") && is(stack.last(1), "lb")) {
+		console.log("Rule 23");
+		var val = stack.pop().value;
+		stack.pop();
+		stack.push({type: 'list', 'value': [val]});
+		return true;
+	}
+
 	stack.push(next);
 	return false;
 }
 
-parse("{ test: [2, \"str\"], hello: 3 }");
-console.log("Final\n\n");
-console.log(compileOST(stack[0]));
+parse('[{"test": "str"}, 2, [3, {"test2": "str2"}], 5]').then(function (res) {
+ 	console.log("Final\n\n");
+ 	console.log(JSON.stringify(res));
+});
+
 
 
 /*
 
 obj = '{', KVList, '}'
+    | '{' '}'
+
 list = '[' VList ']'
+     | '[' ']'
+     | '[' value ']'
 
 KVList = KVList ',' KV
        | KV
+       | KVList KVList
 
 KV = key covalue
+   | value covalue
+   | VList covalue
 
 key = key token
     | key int
@@ -249,8 +343,12 @@ covalue = colon value
 VList = value VList
       | VList cvalue
       | cvalue
+      | list VList
+      | obj VList
 
 cvalue = comma value
+       | comma list
+       | comma obj
 
 value = quote
       | boolean
@@ -265,18 +363,36 @@ boolean = true
 */
 
 
+
 function compileOST(tree) {
 	var rawTypes = ["boolean", "number", "string"];
+
 	if (rawTypes.indexOf((typeof tree)) != -1)
 		return tree;
 
+	if (Array.isArray(tree)) {
+		var toR = [];
+		while (tree.length != 0)
+			toR.unshift(compileOST(tree.pop()));
+		return toR;
+	}
+	
+
 	if (is(tree, "obj")) {
 		var toR = {};
+		if (tree.value == null)
+			return {};
 		tree.value.forEach(function (i) {
 			toR[i.key] = compileOST(i.value);
 		});
 		return toR;
 	}
 
+	if (is(tree, "list")) {
+		return compileOST(tree.value);
+	}
+
 	console.error("Uncaught type in compile: " + JSON.stringify(tree));
+	return null;
 }
+
