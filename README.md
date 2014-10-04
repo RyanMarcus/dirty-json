@@ -6,9 +6,11 @@ A JSON parser that tries to handle non-conforming JSON.
 This is still under *heavy development*. Most notably, I need to make a lot of the internals of the parser asynchronous.
 
 Turn this:
+
     [5, 0.5, 'single quotes', "quotes in "quotes" in quotes"]
 
 Into this:
+
     [5,0.5,"single quotes","quotes in \"quotes\" in quotes"]
 
 ## Why?
