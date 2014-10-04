@@ -1,9 +1,56 @@
 # dirty-json
 [ ![Codeship Status for RyanMarcus/dirty-json](https://www.codeship.io/projects/cbc19870-2e42-0132-d30c-4adef3b19db7/status)](https://www.codeship.io/projects/39346)
 
-A JSON parser that can handle non-conforming JSON.
+A JSON parser that tries to handle non-conforming JSON.
 
-*Still under heavy development. I haven't added it to NPM yet because I'm still working on it.*
+This is still under *heavy development*. Most notably, I need to make a lot of the internals of the parser asynchronous.
+
+## Why?
+We all love JSON. But sometimes, out in that scary place called "the real world", we see something like this:
+
+    { "user": "<div class="user">Ryan</div>" }
+
+Or even something like this:
+
+    { user: '<div class="user">
+	Ryan
+	</div>' }
+
+While these are obviously cringe-worthy, we still a way to parse them. `dirty-json` provides a library to do exactly that.
+
+## Examples
+`dirty-json` does not require object keys to be quoted, and can handle single-quoted value strings.
+
+    var dJSON = require('dirty-json');
+	dJSON.parse("{ test: 'this is a test'}").then(function (r) {
+		console.log(JSON.stringify(r));
+    });
+
+	// output: {"test":"this is a test"}
+
+`dirty-json` can handle embedded quotes in strings.
+
+    var dJSON = require('dirty-json');
+	dJSON.parse('{ "test": "some text "a quote" more text"}').then(function (r) {
+		console.log(JSON.stringify(r));
+    });
+
+	// output: {"test":"some text \"aquote\" more text"}
+
+`dirty-json` can handle newlines inside of a string.
+
+    var dJSON = require('dirty-json');
+	dJSON.parse('{ "test": "each \n on \n new \n line"}').then(function (r) {
+		console.log(JSON.stringify(r));
+    });
+
+	// output: {"test":"each \n on \n new \n line"}
+
+## But what about THIS ambiguous example?
+Since `dirty-json` is handling malformed JSON, it will not always produce the result that you "think" it should. That's why you should only use this when you absolutely need it. Malformed JSON is malformed for a reason.
+
+## How does it work?
+Currently `dirty-json` uses a hand-written lexer and `LL(0)` parser. It is not remotely optimized. In fact, in the current version, every rule is evaluated during reduction until a match is found. Optimizing this would not be difficult, but `dirty-json` really shouldn't need to be fast, since it shouldn't be used in any environment that requires reliable or fast results.
 
 ## License
 > dirty-json is free software: you can redistribute it and/or modify
