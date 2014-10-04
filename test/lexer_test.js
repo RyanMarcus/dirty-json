@@ -168,5 +168,19 @@ describe("lexer", function () {
 			assert.equal(res[1].value, "is");
 		}).then(done, done);
 	});
+
+	it('should handle embedded quotes', function (done) { 
+		lexer.getAllTokens('"this is "a" test"').then(function(res) {
+			assert.equal(res.length, 3);
+			assert.equal(res[0].type, "quote");
+			assert.equal(res[0].value, "this is ");
+
+			assert.equal(res[1].type, "token");
+			assert.equal(res[1].value, "a");
+			
+			assert.equal(res[2].type, "quote");
+			assert.equal(res[2].value, " test");
+		}).then(done, done);
+	});
 });
 

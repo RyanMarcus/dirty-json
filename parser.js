@@ -304,11 +304,44 @@ function reduce(stack) {
 		return true;
 	}
 
+	// begin ERROR CASES
+	if (is(next, "value") && is(stack.peek(), "key") && is(stack.last(1), "value")) {
+		console.log("Error rule 1");
+		var middleVal = stack.pop();
+		stack.peek().value += '"' + middleVal.value + '"';
+		stack.peek().value += next.value;
+		return true;
+	}
+
+	if (is(next, "value") && is(stack.peek(), "key") && is(stack.last(1), "VList")) {
+		console.log("Error rule 2");
+		var middleVal = stack.pop();
+		var oldLastVal = stack.peek().value.pop();
+		oldLastVal +=  '"' + middleVal.value + '"';
+		oldLastVal += next.value;
+
+		stack.peek().value.push(oldLastVal);
+
+		return true;
+	}
+
+	if (is(next, "value") && is(stack.peek(), "key") && is(stack.last(1), "KVList")) {
+		console.log("Error rule 3");
+		var middleVal = stack.pop();
+		var oldLastVal = stack.peek().value.pop();
+		oldLastVal.value +=  '"' + middleVal.value + '"';
+		oldLastVal.value += next.value;
+
+		stack.peek().value.push(oldLastVal);
+
+		return true;
+	}
+
 	stack.push(next);
 	return false;
 }
 
-parse('[{"test": "str"}, 2, [3, {"test2": "str2"}], 5]').then(function (res) {
+parse('{ "test": "embedded "quoted" string", "test2": "another string"}').then(function (res) {
  	console.log("Final\n\n");
  	console.log(JSON.stringify(res));
 });
@@ -359,6 +392,17 @@ boolean = true
         | false
 
 
+
+SPECIAL ERROR CASES, only do these reductions if no other reductions worked
+
+ -- for the case of ["some "text" here"]
+value = value key value
+
+-- for the case of [3, "some "text" here", 4]
+VList = VList key value
+
+-- for the case of {"t": "some "text" here"}
+KVList = KVList key value
 
 */
 
