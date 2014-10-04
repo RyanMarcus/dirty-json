@@ -1,4 +1,6 @@
 # dirty-json
+[ ![Codeship Status for RyanMarcus/dirty-json](https://www.codeship.io/projects/cbc19870-2e42-0132-d30c-4adef3b19db7/status)](https://www.codeship.io/projects/39346)
+
 A JSON parser that can handle non-conforming JSON.
 
 *Still under heavy development. I haven't added it to NPM yet because I'm still working on it.*
