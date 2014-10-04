@@ -101,6 +101,12 @@ function reduce(stack) {
 		return true;
 	}
 
+	if (is(next, "key") && next.value == "null") {
+		log("Rule 7");
+		stack.push({'type': "value", 'value': null});
+		return true;
+	}
+
 
 	if (is(next, "token") && is(stack.peek(), "key")) {
 		log("Rule 11a");
@@ -362,12 +368,11 @@ function reduce(stack) {
 	return false;
 }
 
-var str = '"this\n"quote"\ntext"';
-parse('{ "test0": ' + str + '}').then(function (res) {
- 	log("Final\n\n");
- 	log(JSON.stringify(res));
-	log(res.test0);
-});
+//var str = '"this\n"quote"\ntext"';
+//parse(fs.readFileSync("items.json", {'encoding': 'utf8'})).then(function (res) {
+// 	log("Final\n\n");
+// 	log(JSON.stringify(res));
+//});
 
 
 
@@ -410,6 +415,7 @@ value = quote
       | boolean
       | int
       | float
+      | 'n' 'u' 'l' 'l'
 
 boolean = true
         | false

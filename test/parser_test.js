@@ -121,6 +121,14 @@ describe("parser", function () {
 			compareResults('[{"test": "str"}, [2, false, ",", 0.4, "[val]"], [3, {"test2": ["str2", 6]}], 5]', done);
 		});
 
+		it('should handle nulls in lists', function (done) {
+			compareResults("[null]", done);
+		});
+
+		it('should handle nulls in objects', function (done) {
+			compareResults("{ \"test\": null}", done);
+		});
+
 	});
 
 	describe("parse() on invalid JSON", function () {
@@ -200,6 +208,16 @@ describe("parser", function () {
 					assert.equal(r[0], 5);
 					assert.equal(r[1], 6);
 					assert.equal(r[3], "test");
+				}).then(done, done);
+			});
+		});
+
+
+		describe("with embedded HTML", function() {
+			it('should handle an embedded DIV tag', function(done) {
+				parser.parse('["<div class="class">some text</div>"]').then(function (r) {
+					assert.equal(r[0], '<div class="class">some text</div>');
+					assert.equal(r.length, 1);
 				}).then(done, done);
 			});
 		});
