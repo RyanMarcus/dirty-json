@@ -4,7 +4,7 @@
   "description": "A permissive parser for dirty JSON data that does its best",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "mocha"
   },
   "keywords": [
     "json",
@@ -13,6 +13,7 @@
   "author": "Ryan Marcus <ryan@rmarcus.info>",
   "license": "ISC",
   "dependencies": {
-    "jison": "^0.4.15"
+    "jison": "^0.4.15",
+    "q": "^1.0.1"
   }
 }
