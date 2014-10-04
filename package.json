@@ -1,24 +1,27 @@
-
-
 {
-  "name": "dirty-json",
-  "version": "0.0.1",
-  "description": "A permissive parser for dirty JSON data that does its best",
-  "main": "dirty-json.js",
-  "scripts": {
-    "test": "node_modules/mocha/bin/mocha"
-  },
-  "keywords": [
-    "json",
-    "parser"
-  ],
-  "author": "Ryan Marcus <ryan@rmarcus.info>",
-  "license": "GNU Affero GPLv3",
-  "dependencies": {
-    "q": "^1.0.1"
-  },
+    "name": "dirty-json",
+    "version": "0.0.1",
+    "description": "A permissive parser for dirty JSON data that does its best",
+    "main": "dirty-json.js",
+    "scripts": {
+	"test": "node_modules/mocha/bin/mocha"
+    },
+    "keywords": [
+	"json",
+	"parser"
+    ],
+    "author": "Ryan Marcus <ryan@rmarcus.info>",
+    "license": "GNU Affero GPLv3",
+    "dependencies": {
+	"q": "^1.0.1"
+    },
+    
+    "devDependencies": {
+	"mocha": "1.21.4"
+    },
 
-  "devDependencies": {
-    "mocha": "1.21.4"
-  }
+    "repository": {
+	"type" : "git",
+	"url" : "https://github.com/RyanMarcus/dirty-json.git"
+    }
 }
