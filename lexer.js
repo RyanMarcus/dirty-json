@@ -1,4 +1,4 @@
-
+var Q = require("Q");
 
 
 function lex(nextFunc, peekFunc, emit) {
@@ -11,8 +11,8 @@ function lex(nextFunc, peekFunc, emit) {
 			// chomp until we hit another quote
 			while (true) {
 				sym = nextFunc();
-				if (sym == '"') {
-					emit({type: 'quote', value: curr});
+				if (sym == '"' || !sym) {
+					emit({type: 'quote', value: curr.join("")});
 					curr = [];
 					break;
 				}
@@ -26,8 +26,8 @@ function lex(nextFunc, peekFunc, emit) {
 			// chomp until we hit another quote
 			while (true) {
 				sym = nextFunc();
-				if (sym == "'") {
-					emit({type: 'quote', value: curr});
+				if (sym == "'" || !sym) {
+					emit({type: 'quote', value: curr.join("")});
 					curr = [];
 					break;
 				}
@@ -37,11 +37,12 @@ function lex(nextFunc, peekFunc, emit) {
 			continue;
 		}
 
-		if (sym.match("[0-9\\.]")) {
+		if (sym.match("[\\-0-9\\.]")) {
 			// chomp until we get a non-integer
 			curr.push(sym);
 			while (true) {
-				if (peekFunc().match("[0-9]") || peekFunc() == ".") {
+				if (peekFunc() && 
+				    (peekFunc().match("[0-9]") || peekFunc() == ".")) {
 					curr.push(nextFunc());
 					continue;
 				}
@@ -49,9 +50,9 @@ function lex(nextFunc, peekFunc, emit) {
 			}
 
 			if (curr.indexOf(".") != -1) {
-				emit({type: 'float', value: curr});
+				emit({type: 'float', value: parseFloat(curr.join(""))});
 			} else {
-				emit({type: 'int', value: curr});
+				emit({type: 'int', value: parseInt(curr.join(""))});
 			}
 
 			curr = [];
@@ -93,6 +94,7 @@ function lex(nextFunc, peekFunc, emit) {
 			continue;
 		}
 
+		// TODO remove?
 		if (sym == ".") {
 			emit({type: 'dot'});
 			continue;
@@ -132,7 +134,24 @@ function lexString(str, emit) {
 	
 }
 
+module.exports.getAllTokens = getAllTokens;
+function getAllTokens(str) {
+	var toR = Q.defer();
+
+	var arr = [];
+	var emit = function (i) {
+		arr.push(i);
+	};
+
+	lexString(str, emit);
+
+	toR.resolve(arr);
+	return toR.promise;
+}
 
 
 
-//lexString("{ test: [568.9, 68, .8] }", printEmit);
+
+//getAllTokens('5600').then(function(res) {
+// 	console.log(res);
+//});
