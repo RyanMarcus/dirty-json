@@ -1,6 +1,8 @@
 # dirty-json
 A JSON parser that can handle non-conforming JSON.
 
+*Still under heavy development. I haven't added it to NPM yet because I'm still working on it.*
+
 ## License
 > dirty-json is free software: you can redistribute it and/or modify
 > it under the terms of the GNU Affero General Public License as published by
