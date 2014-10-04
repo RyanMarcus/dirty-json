@@ -17,6 +17,10 @@ function is(obj, prop) {
 	return (obj && obj.hasOwnProperty("type") && obj.type == prop);
 }
 
+function log(str) {
+	//console.log(str);
+}
+
 function parseStream(stream) {
 	var stack = [];
 
@@ -48,13 +52,13 @@ function parse(text) {
 
 
 	for (var i = 0; i < tokens.length; i++) {
-		console.log("Shifting " + tokens[i].type);
+		log("Shifting " + tokens[i].type);
 		stack.push(tokens[i]);
-		console.log(stack);
-		console.log("Reducing...");
+		log(stack);
+		log("Reducing...");
 		while (reduce(stack)) {
-			console.log(stack);
-			console.log("Reducing...");
+			log(stack);
+			log("Reducing...");
 		}
 
 	}
@@ -68,39 +72,39 @@ function reduce(stack) {
 
 
 	if (is(next, "key") && next.value == "true") {
-		console.log("Rule 5");
+		log("Rule 5");
 		stack.push({'type': "boolean", 'value': "true"});
 		return true;
 	}
 
 
 	if (is(next, "key") && next.value == "false") {
-		console.log("Rule 6");
+		log("Rule 6");
 		stack.push({'type': "boolean", 'value': "false"});
 		return true;
 	}
 
 
 	if (is(next, "token") && is(stack.peek(), "key")) {
-		console.log("Rule 11a");
+		log("Rule 11a");
 		stack.peek().value += next.value;
 		return true;
 	}
 
 	if (is(next, "int") && is(stack.peek(), "key")) {
-		console.log("Rule 11b");
+		log("Rule 11b");
 		stack.peek().value += next.value;
 		return true;
 	}
 
 	if (is(next, "token")) {
-		console.log("Rule 11c");
+		log("Rule 11c");
 		stack.push({type: 'key', value: [ next.value ] });
 		return true;
 	}
 
 	if (is(next, "quote")) {
-		console.log("Rule 11d");
+		log("Rule 11d");
 		next.type = "value";
 		next.value = next.value;
 		stack.push(next);
@@ -108,7 +112,7 @@ function reduce(stack) {
 	}
 
 	if (is(next, "boolean")) {
-		console.log("Rule 11e");
+		log("Rule 11e");
 		next.type = "value";
 
 		if (next.value == "true") {
@@ -122,14 +126,14 @@ function reduce(stack) {
 	}
 
 	if(is(next, "int")) {
-		console.log("Rule 11f");
+		log("Rule 11f");
 		next.type = "value";
 		stack.push(next);
 		return true;
 	}
 	
 	if (is(next, "float")) {
-		console.log("Rule 11g");
+		log("Rule 11g");
 		next.type = "value";
 		stack.push(next);
 		return true;
@@ -137,7 +141,7 @@ function reduce(stack) {
 
 
 	if (is(next, "value") && is(stack.peek(), "comma")) {
-		console.log("Rule 12");
+		log("Rule 12");
 		next.type = "cvalue";
 		stack.pop();
 		stack.push(next);
@@ -145,7 +149,7 @@ function reduce(stack) {
 	}
 
 	if (is(next, "list") && is(stack.peek(), "comma")) {
-		console.log("Rule 12a");
+		log("Rule 12a");
 		next.type = "cvalue";
 		stack.pop();
 		stack.push(next);
@@ -153,7 +157,7 @@ function reduce(stack) {
 	}
 
 	if (is(next, "obj") && is(stack.peek(), "comma")) {
-		console.log("Rule 12b");
+		log("Rule 12b");
 		var toPush = {'type': 'cvalue', 'value': next};
 		stack.pop();
 		stack.push(toPush);
@@ -161,7 +165,7 @@ function reduce(stack) {
 	}
 
 	if (is(next, "value") && is(stack.peek(), "colon")) {
-		console.log("Rule 13");
+		log("Rule 13");
 		next.type = "covalue";
 		stack.pop();
 		stack.push(next);
@@ -169,7 +173,7 @@ function reduce(stack) {
 	}
 
 	if (is(next, "list") && is(stack.peek(), "colon")) {
-		console.log("Rule 13a");
+		log("Rule 13a");
 		next.type = "covalue";
 		stack.pop();
 		stack.push(next);
@@ -177,7 +181,7 @@ function reduce(stack) {
 	}
 
 	if (is(next, "obj") && is(stack.peek(), "colon")) {
-		console.log("Rule 13b");
+		log("Rule 13b");
 		var toPush = {'type': "covalue", 'value': next};
 		stack.pop();
 		stack.push(toPush);
@@ -185,19 +189,19 @@ function reduce(stack) {
 	}
 	
 	if (is(next, "cvalue") && is(stack.peek(), "VList")) {
-		console.log("Rule 14");
+		log("Rule 14");
 		stack.peek().value.push(next.value);
 		return true;
 	}
 
 	if (is(next, "cvalue")) {
-		console.log("Rule 15");
+		log("Rule 15");
 		stack.push({'type': 'VList', 'value': [next.value]});
 		return true;
 	}
 
 	if (is(next, "VList") && is(stack.peek(), "value")) {
-		console.log("Rule 15a");
+		log("Rule 15a");
 		next.value.unshift(stack.peek().value);
 		stack.pop();
 		stack.push(next);
@@ -205,7 +209,7 @@ function reduce(stack) {
 	}
 
 	if (is(next, "VList") && is(stack.peek(), "list")) {
-		console.log("Rule 15b");
+		log("Rule 15b");
 		next.value.unshift(stack.peek().value);
 		stack.pop();
 		stack.push(next);
@@ -213,7 +217,7 @@ function reduce(stack) {
 	}
 
 	if (is(next, "VList") && is(stack.peek(), "obj")) {
-		console.log("Rule 15c");
+		log("Rule 15c");
 		next.value.unshift(stack.peek());
 		stack.pop();
 		stack.push(next);
@@ -221,21 +225,21 @@ function reduce(stack) {
 	}
 
 	if (is(next, "covalue") && is(stack.peek(), "key")) {
-		console.log("Rule 16");
+		log("Rule 16");
 		var key = stack.pop();
 		stack.push({'type': 'KV', 'key': key.value, 'value': next.value});
 		return true;
 	}
 
 	if (is(next, "covalue") && is(stack.peek(), "value")) {
-		console.log("Rule 16a");
+		log("Rule 16a");
 		var key = stack.pop();
 		stack.push({'type': 'KV', 'key': key.value, 'value': next.value});
 		return true;
 	}
 
 	if (is(next, "covalue") && is(stack.peek(), "VList")) {
-		console.log("Rule 16b");
+		log("Rule 16b");
 		var key = stack.pop();
 		key.value.forEach(function (i) {
 			stack.push({'type': 'KV', 'key': i, 'value': next.value});
@@ -244,14 +248,14 @@ function reduce(stack) {
 	}
 
 	if (is(next, "KV") && is(stack.last(0), "comma") && is(stack.last(1), "KVList")) {
-		console.log("Rule 17");
+		log("Rule 17");
 		stack.last(1).value.push(next);
 		stack.pop();
 		return true;
 	}
 
 	if (is(next, "KVList") && is(stack.peek(), "KVList")) {
-		console.log("Rule 17a");
+		log("Rule 17a");
 		next.value.forEach(function (i) {
 			stack.peek().value.push(i);
 		});
@@ -260,13 +264,13 @@ function reduce(stack) {
 	}
 
 	if (is(next, "KV")) {
-		console.log("Rule 18");
+		log("Rule 18");
 		stack.push({'type': "KVList", 'value': [next]});
 		return true;
 	}
 
 	if (is(next, "rb") && is(stack.peek(), "VList") && is(stack.last(1), "lb")) {
-		console.log("Rule 19");
+		log("Rule 19");
 		var l = stack.pop();
 		stack.pop();
 		stack.push({'type': "list", 'value': l.value});
@@ -275,7 +279,7 @@ function reduce(stack) {
 
 
 	if (is(next, "rcb") && is(stack.peek(), "KVList") && (stack.last(1), "lcb")) {
-		console.log("Rule 20");
+		log("Rule 20");
 		var l = stack.pop();
 		stack.pop();
 		stack.push({'type': 'obj', 'value': l.value});
@@ -283,21 +287,21 @@ function reduce(stack) {
 	}
 
 	if (is(next, "rcb") && is(stack.peek(), "lcb")) {
-		console.log("Rule 21");
+		log("Rule 21");
 		stack.pop();
 		stack.push({type: 'obj', 'value': null});
 		return true;
 	}
 
 	if (is(next, "rb") && is(stack.peek(), "lb")) {
-		console.log("Rule 22");
+		log("Rule 22");
 		stack.pop();
 		stack.push({type: 'list', 'value': []});
 		return true;
 	}
 
 	if (is(next, "rb") && is(stack.peek(), "value") && is(stack.last(1), "lb")) {
-		console.log("Rule 23");
+		log("Rule 23");
 		var val = stack.pop().value;
 		stack.pop();
 		stack.push({type: 'list', 'value': [val]});
@@ -306,7 +310,7 @@ function reduce(stack) {
 
 	// begin ERROR CASES
 	if (is(next, "value") && is(stack.peek(), "key") && is(stack.last(1), "value")) {
-		console.log("Error rule 1");
+		log("Error rule 1");
 		var middleVal = stack.pop();
 		stack.peek().value += '"' + middleVal.value + '"';
 		stack.peek().value += next.value;
@@ -314,7 +318,7 @@ function reduce(stack) {
 	}
 
 	if (is(next, "value") && is(stack.peek(), "key") && is(stack.last(1), "VList")) {
-		console.log("Error rule 2");
+		log("Error rule 2");
 		var middleVal = stack.pop();
 		var oldLastVal = stack.peek().value.pop();
 		oldLastVal +=  '"' + middleVal.value + '"';
@@ -326,7 +330,7 @@ function reduce(stack) {
 	}
 
 	if (is(next, "value") && is(stack.peek(), "key") && is(stack.last(1), "KVList")) {
-		console.log("Error rule 3");
+		log("Error rule 3");
 		var middleVal = stack.pop();
 		var oldLastVal = stack.peek().value.pop();
 		oldLastVal.value +=  '"' + middleVal.value + '"';
@@ -342,8 +346,8 @@ function reduce(stack) {
 }
 
 parse('{ "test": "embedded "quoted" string", "test2": "another string"}').then(function (res) {
- 	console.log("Final\n\n");
- 	console.log(JSON.stringify(res));
+ 	log("Final\n\n");
+ 	log(JSON.stringify(res));
 });
 
 

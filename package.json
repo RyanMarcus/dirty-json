@@ -4,16 +4,19 @@
   "description": "A permissive parser for dirty JSON data that does its best",
   "main": "index.js",
   "scripts": {
-    "test": "mocha"
+    "test": "node_modules/mocha/bin/mocha"
   },
   "keywords": [
     "json",
     "parser"
   ],
   "author": "Ryan Marcus <ryan@rmarcus.info>",
-  "license": "ISC",
+  "license": "GPLv3",
   "dependencies": {
-    "jison": "^0.4.15",
     "q": "^1.0.1"
+  },
+
+  "devDependencies": {
+    "mocha": "1.21.4"
   }
 }
