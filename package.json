@@ -4,7 +4,7 @@
   "name": "dirty-json",
   "version": "0.0.1",
   "description": "A permissive parser for dirty JSON data that does its best",
-  "main": "parser.js",
+  "main": "dirty-json.js",
   "scripts": {
     "test": "node_modules/mocha/bin/mocha"
   },
