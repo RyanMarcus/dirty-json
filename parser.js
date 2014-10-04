@@ -443,6 +443,9 @@ function compileOST(tree) {
 	if (rawTypes.indexOf((typeof tree)) != -1)
 		return tree;
 
+	if (tree == null)
+		return null;
+
 	if (Array.isArray(tree)) {
 		var toR = [];
 		while (tree.length != 0)

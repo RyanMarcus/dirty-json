@@ -15,7 +15,7 @@
 // along with dirty-json.  If not, see <http://www.gnu.org/licenses/>.
 
 
-var Q = require("Q");
+var Q = require("q");
 
 
 function lex(nextFunc, peekFunc, emit) {
