@@ -7,7 +7,7 @@ This is still under *heavy development*. Most notably, I need to make a lot of t
 
 Turn this:
 
-    [5, 0.5, 'single quotes', "quotes in "quotes" in quotes"]
+    [5, .5, 'single quotes', "quotes in "quotes" in quotes"]
 
 Into this:
 
