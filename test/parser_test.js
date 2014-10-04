@@ -12,15 +12,15 @@
 // GNU Affero General Public License for more details.
 // 
 // You should have received a copy of the GNU Affero General Public License
-// along with dirty-json.  If not, see <http://www.gnu.org/licenses/>.
+// along with dJSON.  If not, see <http://www.gnu.org/licenses/>.
 
 
 var assert = require("assert");
-var parser = require("../parser");
+var dJSON = require("../dirty-json");
 
 
 function compareResults(json, done) {
-	parser.parse(json).then(function (res) {
+	dJSON.parse(json).then(function (res) {
 		jeq(res, JSON.parse(json));
 	}).then(done, done);
 }
@@ -32,7 +32,7 @@ function compareResultsToValid(invalid, valid, done) {
 		// it didn't fail!
 		done("json was valid!");
 	} catch (e) {
-		parser.parse(invalid).then(function (res) {
+		dJSON.parse(invalid).then(function (res) {
 			jeq(res, JSON.parse(valid));
 		}).then(done, done);
 	}
@@ -165,28 +165,28 @@ describe("parser", function () {
 		describe("with new lines", function() {
 			it ('should handle a newline in a string in object', function(done) {
 				
-				parser.parse('{ "test0": "a '+"\n"+'string" }').then(function (r) {
+				dJSON.parse('{ "test0": "a '+"\n"+'string" }').then(function (r) {
 					assert.equal(r.test0, 'a '+"\n"+'string');
 				}).then(done, done);
 			});
 
 			it ('should handle a newline in a string in a list', function(done) {
 				
-				parser.parse('["a '+"\n"+'string"]').then(function (r) {
+				dJSON.parse('["a '+"\n"+'string"]').then(function (r) {
 					assert.equal(r[0], 'a '+"\n"+'string');
 				}).then(done, done);
 			});
 
 			it('should handle newline in misquoted string in object', function(done) {
 				var str = 'this\n"quote"\ntext';
-				parser.parse('{ "test0": "' + str + '"}').then(function (r) {
+				dJSON.parse('{ "test0": "' + str + '"}').then(function (r) {
 					assert.equal(r.test0, str);
 				}).then(done, done);
 			});
 
 			it('should handle newline in misquoted string in object', function(done) {
 				var str = 'this\n"quote"\ntext';
-				parser.parse('{ "test1": false, "test0": "' + str + '", test2: 5.5}').then(function (r) {
+				dJSON.parse('{ "test1": false, "test0": "' + str + '", test2: 5.5}').then(function (r) {
 					assert.equal(r.test0, str);
 					assert.equal(r.test1, false);
 					assert.equal(r.test2, 5.5);
@@ -195,7 +195,7 @@ describe("parser", function () {
 
 			it('should handle newline in misquoted string in list', function(done) {
 				var str = 'this\n"quote"\ntext';
-				parser.parse('["' + str + '"]').then(function (r) {
+				dJSON.parse('["' + str + '"]').then(function (r) {
 					assert.equal(r[0], str);
 				}).then(done, done);
 			});
@@ -203,7 +203,7 @@ describe("parser", function () {
 
 			it('should handle newline in misquoted string in list', function(done) {
 				var str = 'this\n"quote"\ntext';
-				parser.parse('[5, 6, "' + str + '", "test"]').then(function (r) {
+				dJSON.parse('[5, 6, "' + str + '", "test"]').then(function (r) {
 					assert.equal(r[2], str);
 					assert.equal(r[0], 5);
 					assert.equal(r[1], 6);
@@ -215,7 +215,7 @@ describe("parser", function () {
 
 		describe("with embedded HTML", function() {
 			it('should handle an embedded DIV tag', function(done) {
-				parser.parse('["<div class="class">some text</div>"]').then(function (r) {
+				dJSON.parse('["<div class="class">some text</div>"]').then(function (r) {
 					assert.equal(r[0], '<div class="class">some text</div>');
 					assert.equal(r.length, 1);
 				}).then(done, done);
