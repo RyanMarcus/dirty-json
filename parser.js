@@ -362,9 +362,11 @@ function reduce(stack) {
 	return false;
 }
 
-parse('{ "test": "embedded "quoted" string", "test2": "another string"}').then(function (res) {
+var str = '"this\n"quote"\ntext"';
+parse('{ "test0": ' + str + '}').then(function (res) {
  	log("Final\n\n");
  	log(JSON.stringify(res));
+	log(res.test0);
 });
 
 

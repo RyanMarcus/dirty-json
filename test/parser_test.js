@@ -123,7 +123,7 @@ describe("parser", function () {
 
 	});
 
-	describe("parse() on invalid JSON", function (done) {
+	describe("parse() on invalid JSON", function () {
 		it('should handle non-quoted object keys', function(done) {
 			compareResultsToValid('{test: 5}', '{"test": 5}', done);
 		});
@@ -153,6 +153,57 @@ describe("parser", function () {
 			compareResultsToValid('{"test0": false, "test": "some "quoted" text", "test1": 5}', '{"test0": false, "test": "some \\"quoted\\" text", "test1": 5}', done);
 		});
 
+
+		describe("with new lines", function() {
+			it ('should handle a newline in a string in object', function(done) {
+				
+				parser.parse('{ "test0": "a '+"\n"+'string" }').then(function (r) {
+					assert.equal(r.test0, 'a '+"\n"+'string');
+				}).then(done, done);
+			});
+
+			it ('should handle a newline in a string in a list', function(done) {
+				
+				parser.parse('["a '+"\n"+'string"]').then(function (r) {
+					assert.equal(r[0], 'a '+"\n"+'string');
+				}).then(done, done);
+			});
+
+			it('should handle newline in misquoted string in object', function(done) {
+				var str = 'this\n"quote"\ntext';
+				parser.parse('{ "test0": "' + str + '"}').then(function (r) {
+					assert.equal(r.test0, str);
+				}).then(done, done);
+			});
+
+			it('should handle newline in misquoted string in object', function(done) {
+				var str = 'this\n"quote"\ntext';
+				parser.parse('{ "test1": false, "test0": "' + str + '", test2: 5.5}').then(function (r) {
+					assert.equal(r.test0, str);
+					assert.equal(r.test1, false);
+					assert.equal(r.test2, 5.5);
+				}).then(done, done);
+			});
+
+			it('should handle newline in misquoted string in list', function(done) {
+				var str = 'this\n"quote"\ntext';
+				parser.parse('["' + str + '"]').then(function (r) {
+					assert.equal(r[0], str);
+				}).then(done, done);
+			});
+
+
+			it('should handle newline in misquoted string in list', function(done) {
+				var str = 'this\n"quote"\ntext';
+				parser.parse('[5, 6, "' + str + '", "test"]').then(function (r) {
+					assert.equal(r[2], str);
+					assert.equal(r[0], 5);
+					assert.equal(r[1], 6);
+					assert.equal(r[3], "test");
+				}).then(done, done);
+			});
+		});
+		
 
 		
 	});
