@@ -1,6 +1,8 @@
 # dirty-json
 [ ![Codeship Status for RyanMarcus/dirty-json](https://www.codeship.io/projects/cbc19870-2e42-0132-d30c-4adef3b19db7/status)](https://www.codeship.io/projects/39346)
 
+[![NPM](https://nodei.co/npm/dirty-json.png?compact=true)](https://nodei.co/npm/dirty-json/)
+
 A JSON parser that tries to handle non-conforming JSON.
 
 This is still under *heavy development*. Most notably, I need to make a lot of the internals of the parser asynchronous.
