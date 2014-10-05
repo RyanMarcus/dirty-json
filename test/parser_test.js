@@ -220,6 +220,21 @@ describe("parser", function () {
 					assert.equal(r.length, 1);
 				}).then(done, done);
 			});
+
+			it('should handle an embedded span tag', function(done) {
+				dJSON.parse('["<span class="class">some text</span>"]').then(function (r) {
+					assert.equal(r[0], '<span class="class">some text</span>');
+					assert.equal(r.length, 1);
+				}).then(done, done);
+			});
+
+
+			it('should handle an embedded span tag in a div tag', function(done) {
+				dJSON.parse('["<div class="divclass"><span class="class">some text</span></div>"]').then(function (r) {
+					assert.equal(r[0], '<div class="divclass"><span class="class">some text</span></div>');
+					assert.equal(r.length, 1);
+				}).then(done, done);
+			});
 		});
 		
 
