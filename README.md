@@ -3,7 +3,7 @@
 
 [![NPM](https://nodei.co/npm/dirty-json.png?compact=true)](https://nodei.co/npm/dirty-json/)
 
-A JSON parser that tries to handle non-conforming JSON.
+A JSON parser that tries to handle non-conforming or otherwise invalid JSON.
 
 This is still under *heavy development*. Most notably, I need to make a lot of the internals of the parser asynchronous.
 
