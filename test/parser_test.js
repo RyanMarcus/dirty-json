@@ -129,6 +129,15 @@ describe("parser", function () {
 			compareResults("{ \"test\": null}", done);
 		});
 
+		it('should handle nulls in objects and lists', function (done) {
+			compareResults("{ \"test\": null, \"test2\": [4, null] }", done);
+		});
+
+		it('should handle arbitrary whitespace', function (done) {
+			compareResults("{      \"test\": null,      \"test2\": [4,      null] }", done);
+		});
+
+
 	});
 
 	describe("parse() on invalid JSON", function () {
