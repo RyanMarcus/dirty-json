@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="djson">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- jQuery -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+   
+    <!-- Latest compiled and minified JavaScript -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+
+    <!-- dirty-json bundle -->
+    <script src="assets/bundle.js"></script>
+
+    <!-- AngularJS -->
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.0-rc.4/angular.min.js"></script>
+
+    <!-- the controller -->
+    <script src="assets/DemoCtrl.js"></script>
+  </head>
+
+  <body>
+    <!-- Static navbar -->
+    <div class="navbar navbar-default navbar-static-top" role="navigation">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target=".navbar-collapse">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="#">Dirty JSON Parser</a>
+        </div>
+        <div class="navbar-collapse collapse">
+          <ul class="nav navbar-nav">
+            <li class="active"><a href="#">Demo</a></li>
+            <li><a href="https://github.com/RyanMarcus/dirty-json">GitHub</a></li>
+            <li><a href="https://www.npmjs.org/package/dirty-json">NPM</a></li>
+          </ul>
+        </div><!--/.nav-collapse -->
+      </div>
+    </div>
+
+
+
+
+    <div class="container" ng-controller="DemoCtrl">
+      <div class="row">
+	<div class="well">
+	  <h4>Dirty JSON Parser</h4>
+	  <p>Enter some JSON on the left side, press the button, and then see the parsed output on the right. Try some options from the dropdown menu to see illustrative examples. Of course, not every invalid JSON string will be parsed, but many will. See the project on <a href="http://github.com/RyanMarcus/dirty-json/">GitHub</a> for more information.</p>
+	</div>
+      </div>
+      
+      <div class="row">
+	<div class="col-md-6">
+	  <h3>Input</h3>
+	  <form role="form">
+	    <div class="form-group">
+	      <select class="form-control" ng-change="doSelection()" ng-model="selectedExample" ng-options="example.name for example in examples">
+
+	      </select>
+	      
+
+
+	    </div>
+
+	    <div class="form-group">
+	      <textarea style="font-family:Consolas,Monaco,Lucida Console,Liberation Mono,DejaVu Sans Mono,Bitstream Vera Sans Mono,Courier New, monospace;" class="form-control" rows="30" ng-model="input"></textarea>
+	    </div>
+	    <button type="button" class="btn btn-primary" ng-click="doParse()">Parse</button>
+	  </form>
+	</div>
+
+	<div class="col-md-6">
+	  <h3>Output</h3>
+	  <form role="form">
+	    <div class="form-group">
+	      <div ng-show="valid">
+		<span class="glyphicon glyphicon-ok"></span> Valid JSON
+	      </div>
+	      
+	      <div ng-hide="valid">
+		<span class="glyphicon glyphicon-remove"></span> Invalid JSON, parsed by the dirty JSON parser
+	      </div>
+	    </div>
+
+	    <div class="form-group">
+	      <textarea  style="font-family:Consolas,Monaco,Lucida Console,Liberation Mono,DejaVu Sans Mono,Bitstream Vera Sans Mono,Courier New, monospace;" class="form-control" rows="30" ng-model="output" readonly></textarea>
+	    </div>
+
+	  </form>
+	</div>
+      </div>
+    </div>
+
+
+    <br/><br/>
+    <div class="footer">
+      <div class="container">
+        <p class="text-muted">Copyright 2014, <a href="http://rmarcus.info">Ryan Marcus</a></p>
+      </div>
+    </div>
+  </body>
+
+</html>
