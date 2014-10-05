@@ -9,6 +9,8 @@ This is still under *heavy development*. Most notably, I need to make a lot of t
 
 You can play around with a demo here: [http://rmarcus.info/dirty-json/](http://rmarcus.info/dirty-json)
 
+You might also be interested in [my blog post about the parser](http://rmarcus.info/blog/2014/10/05/dirty-json-parser.html).
+
 Turn this:
 
     [5, .5, 'single quotes', "quotes in "quotes" in quotes"]
