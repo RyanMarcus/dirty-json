@@ -7,6 +7,8 @@ A JSON parser that tries to handle non-conforming or otherwise invalid JSON.
 
 This is still under *heavy development*. Most notably, I need to make a lot of the internals of the parser asynchronous.
 
+You can play around with a demo here: [http://rmarcus.info/dirty-json/](http://rmarcus.info/dirty-json)
+
 Turn this:
 
     [5, .5, 'single quotes', "quotes in "quotes" in quotes"]
