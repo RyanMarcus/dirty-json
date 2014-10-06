@@ -17,15 +17,40 @@
 
 var Q = require("q");
 
+// terminals
+const LEX_KV = 0;
+const LEX_KVLIST = 1;
+const LEX_VLIST = 2;
+const LEX_BOOLEAN = 3;
+const LEX_COVALUE = 4;
+const LEX_CVALUE = 5;
+const LEX_FLOAT = 6;
+const LEX_INT = 7;
+const LEX_KEY = 8;
+const LEX_LIST = 9;
+const LEX_OBJ = 10;
+const LEX_QUOTE = 11;
+const LEX_RB = 12;
+const LEX_RCB = 13;
+const LEX_TOKEN = 14;
+const LEX_VALUE = 15;
+
+// non-terminals
+const LEX_COLON = -1;
+const LEX_COMMA = -2;
+const LEX_LCB = -3;
+const LEX_LB = -4;
+const LEX_DOT = -5;
+
 
 var lexMap = {
-	":": {type: 'colon'},
-	",": {type: 'comma'},
-	"{": {type: 'lcb'},
-	"}": {type: 'rcb'},
-	"[": {type: 'lb'},
-	"]": {type: 'rb'},
-	".": {type: 'dot'} // TODO: remove?
+	":": {type: LEX_COLON},
+	",": {type: LEX_COMMA},
+	"{": {type: LEX_LCB},
+	"}": {type: LEX_RCB},
+	"[": {type: LEX_LB},
+	"]": {type: LEX_RB},
+	".": {type: LEX_DOT} // TODO: remove?
 };
 
 function lex(nextFunc, peekFunc, emit) {
@@ -39,7 +64,7 @@ function lex(nextFunc, peekFunc, emit) {
 			while (true) {
 				sym = nextFunc();
 				if (sym == '"' || !sym) {
-					emit({type: 'quote', value: curr.join("")});
+					emit({type: LEX_QUOTE, value: curr.join("")});
 					curr = [];
 					break;
 				}
@@ -54,7 +79,7 @@ function lex(nextFunc, peekFunc, emit) {
 			while (true) {
 				sym = nextFunc();
 				if (sym == "'" || !sym) {
-					emit({type: 'quote', value: curr.join("")});
+					emit({type: LEX_QUOTE, value: curr.join("")});
 					curr = [];
 					break;
 				}
@@ -77,9 +102,9 @@ function lex(nextFunc, peekFunc, emit) {
 			}
 
 			if (curr.indexOf(".") != -1) {
-				emit({type: 'float', value: parseFloat(curr.join(""))});
+				emit({type: LEX_FLOAT, value: parseFloat(curr.join(""))});
 			} else {
-				emit({type: 'int', value: parseInt(curr.join(""))});
+				emit({type: LEX_INT, value: parseInt(curr.join(""))});
 			}
 
 			curr = [];
@@ -95,7 +120,7 @@ function lex(nextFunc, peekFunc, emit) {
 			continue;
 		}
 
-		emit({type: 'token', value: sym});
+		emit({type: LEX_TOKEN, value: sym});
 	}
 }
 
