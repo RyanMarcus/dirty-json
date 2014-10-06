@@ -112,7 +112,8 @@ function parse(text) {
 function reduce(stack) {
 	var next = stack.pop();
 
-	if (is(next, LEX_KEY)) {
+	switch(next.type) {
+	case LEX_KEY:
 		if (next.value == "true") {
 			log("Rule 5");
 			stack.push({'type': LEX_BOOLEAN, 'value': "true"});
@@ -131,9 +132,9 @@ function reduce(stack) {
 			stack.push({'type': LEX_VALUE, 'value': null});
 			return true;
 		}
-	}
+		break;
 
-	if (is(next, LEX_TOKEN)) {
+	case LEX_TOKEN:
 		if (is(stack.peek(), LEX_KEY)) {
 			log("Rule 11a");
 			stack.peek().value += next.value;
@@ -143,10 +144,9 @@ function reduce(stack) {
 		log("Rule 11c");
 		stack.push({type: LEX_KEY, value: [ next.value ] });
 		return true;
+		break;
 
-	}
-
-	if (is(next, LEX_INT)) {
+		case LEX_INT:
 		if (is(next, LEX_INT) && is(stack.peek(), LEX_KEY)) {
 			log("Rule 11b");
 			stack.peek().value += next.value;
@@ -157,19 +157,17 @@ function reduce(stack) {
 		next.type = LEX_VALUE;
 		stack.push(next);
 		return true;
-	}
+		break;
 
-
-
-	if (is(next, LEX_QUOTE)) {
+	case LEX_QUOTE:
 		log("Rule 11d");
 		next.type = LEX_VALUE;
 		next.value = next.value;
 		stack.push(next);
 		return true;
-	}
+		break;
 
-	if (is(next, LEX_BOOLEAN)) {
+	case LEX_BOOLEAN:
 		log("Rule 11e");
 		next.type = LEX_VALUE;
 
@@ -181,17 +179,16 @@ function reduce(stack) {
 
 		stack.push(next);
 		return true;
-	}
+		break;
 
-
-	if (is(next, LEX_FLOAT)) {
+	case LEX_FLOAT:
 		log("Rule 11g");
 		next.type = LEX_VALUE;
 		stack.push(next);
 		return true;
-	}
+		break;
 
-	if (is(next, LEX_VALUE)) {
+	case LEX_VALUE:
 		if (is(stack.peek(), LEX_COMMA)) {
 			log("Rule 12");
 			next.type = LEX_CVALUE;
@@ -239,11 +236,9 @@ function reduce(stack) {
 			
 			return true;
 		}
-		
-	}
+		break;
 
-
-	if (is(next, LEX_LIST)) {
+	case LEX_LIST:
 		if (is(next, LEX_LIST) && is(stack.peek(), LEX_COMMA)) {
 			log("Rule 12a");
 			next.type = LEX_CVALUE;
@@ -259,11 +254,9 @@ function reduce(stack) {
 			stack.push(next);
 			return true;
 		}
+		break;
 
-	}
-
-
-	if (is(next, LEX_OBJ)) {
+	case LEX_OBJ:
 		if (is(stack.peek(), LEX_COMMA)) {
 			log("Rule 12b");
 			var toPush = {'type': LEX_CVALUE, 'value': next};
@@ -279,23 +272,22 @@ function reduce(stack) {
 			stack.push(toPush);
 			return true;
 		}
-	}
+		break;
 
-	if (is(next, LEX_CVALUE)) {
-	
+	case LEX_CVALUE:
 		if (is(stack.peek(), LEX_VLIST)) {
 			log("Rule 14");
 			stack.peek().value.push(next.value);
 			return true;
 		}
-
-
+		
+		
 		log("Rule 15");
 		stack.push({'type': LEX_VLIST, 'value': [next.value]});
 		return true;
-	}
+		break;
 
-	if (is(next, LEX_VLIST)) {
+	case LEX_VLIST:
 		if (is(stack.peek(), LEX_VALUE)) {
 			log("Rule 15a");
 			next.value.unshift(stack.peek().value);
@@ -319,12 +311,9 @@ function reduce(stack) {
 			stack.push(next);
 			return true;
 		}
+		break;
 
-	}
-
-
-	if(is(next, LEX_COVALUE)) {
-
+	case LEX_COVALUE:
 		if (is(stack.peek(), LEX_KEY)) {
 			log("Rule 16");
 			var key = stack.pop();
@@ -347,9 +336,9 @@ function reduce(stack) {
 			});
 			return true;
 		}
-	}
+		break;
 
-	if (is(next, LEX_KV)) {
+	case LEX_KV:
 		if (is(stack.last(0), LEX_COMMA) && is(stack.last(1), LEX_KVLIST)) {
 			log("Rule 17");
 			stack.last(1).value.push(next);
@@ -362,11 +351,9 @@ function reduce(stack) {
 		log("Rule 18");
 		stack.push({'type': LEX_KVLIST, 'value': [next]});
 		return true;
+		break;
 
-	}
-
-
-	if (is(next, LEX_KVLIST)) {
+	case LEX_KVLIST:
 		if (is(stack.peek(), LEX_KVLIST)) {
 			log("Rule 17a");
 			next.value.forEach(function (i) {
@@ -375,10 +362,9 @@ function reduce(stack) {
 			
 			return true;
 		}
-	}
-
-
-	if (is(next, LEX_RB)) {
+		break;
+		
+	case LEX_RB:
 		if (is(stack.peek(), LEX_VLIST) && is(stack.last(1), LEX_LB)) {
 			log("Rule 19");
 			var l = stack.pop();
@@ -401,11 +387,9 @@ function reduce(stack) {
 			stack.push({type: LEX_LIST, 'value': [val]});
 			return true;
 		}
-	}
+		break;	
 
-
-	if (is(next, LEX_RCB)) {
-
+	case LEX_RCB:
 		if (is(stack.peek(), LEX_KVLIST) && (stack.last(1), LEX_LCB)) {
 			log("Rule 20");
 			var l = stack.pop();
@@ -420,9 +404,8 @@ function reduce(stack) {
 			stack.push({type: LEX_OBJ, 'value': null});
 			return true;
 		}
-		
+		break;
 	}
-
 
 
 	stack.push(next);
