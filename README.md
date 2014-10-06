@@ -64,7 +64,7 @@ While these are obviously cringe-worthy, we still a way to parse them. `dirty-js
 Since `dirty-json` is handling malformed JSON, it will not always produce the result that you "think" it should. That's why you should only use this when you absolutely need it. Malformed JSON is malformed for a reason.
 
 ## How does it work?
-Currently `dirty-json` uses a hand-written lexer and `LL(1)` parser. It is not remotely optimized. In fact, in the current version, every rule is evaluated during reduction until a match is found. Optimizing this would not be difficult, but `dirty-json` really shouldn't need to be fast, since it shouldn't be used in any environment that requires reliable or fast results.
+Currently `dirty-json` uses a hand-written lexer and `LL(1)` parser. It shouldn't be used in any environment that requires reliable or fast results.
 
 ## License
 > dirty-json is free software: you can redistribute it and/or modify
