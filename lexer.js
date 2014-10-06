@@ -18,6 +18,16 @@
 var Q = require("q");
 
 
+var lexMap = {
+	":": {type: 'colon'},
+	",": {type: 'comma'},
+	"{": {type: 'lcb'},
+	"}": {type: 'rcb'},
+	"[": {type: 'lb'},
+	"]": {type: 'rb'},
+	".": {type: 'dot'} // TODO: remove?
+};
+
 function lex(nextFunc, peekFunc, emit) {
 	
 	var sym;
@@ -80,40 +90,8 @@ function lex(nextFunc, peekFunc, emit) {
 		if (sym.match("\\s"))
 			continue;
 
-		// TODO should probably use a map here...
-		if (sym == ":") {
-			emit({type: 'colon'});
-			continue;
-		}
-
-		if (sym == ",") {
-			emit({type: 'comma'});
-			continue;
-		}
-	
-		if (sym == "{") {
-			emit({type: 'lcb'});
-			continue;
-		}
-
-		if (sym == "}") {
-			emit({type: 'rcb'});
-			continue;
-		}
-
-		if (sym == "[") {
-			emit({type: 'lb'});
-			continue;
-		}
-
-		if (sym == "]") {
-			emit({type: 'rb'});
-			continue;
-		}
-
-		// TODO remove?
-		if (sym == ".") {
-			emit({type: 'dot'});
+		if (sym in lexMap) {
+			emit(lexMap[sym]);
 			continue;
 		}
 
