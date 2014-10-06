@@ -112,44 +112,54 @@ function parse(text) {
 function reduce(stack) {
 	var next = stack.pop();
 
-
-	if (is(next, LEX_KEY) && next.value == "true") {
-		log("Rule 5");
-		stack.push({'type': LEX_BOOLEAN, 'value': "true"});
-		return true;
-	}
-
-
-	if (is(next, LEX_KEY) && next.value == "false") {
-		log("Rule 6");
-		stack.push({'type': LEX_BOOLEAN, 'value': "false"});
-		return true;
-	}
-
-	if (is(next, LEX_KEY) && next.value == "null") {
-		log("Rule 7");
-		stack.push({'type': LEX_VALUE, 'value': null});
-		return true;
-	}
-
-
-	if (is(next, LEX_TOKEN) && is(stack.peek(), LEX_KEY)) {
-		log("Rule 11a");
-		stack.peek().value += next.value;
-		return true;
-	}
-
-	if (is(next, LEX_INT) && is(stack.peek(), LEX_KEY)) {
-		log("Rule 11b");
-		stack.peek().value += next.value;
-		return true;
+	if (is(next, LEX_KEY)) {
+		if (next.value == "true") {
+			log("Rule 5");
+			stack.push({'type': LEX_BOOLEAN, 'value': "true"});
+			return true;
+		}
+		
+		
+		if (next.value == "false") {
+			log("Rule 6");
+			stack.push({'type': LEX_BOOLEAN, 'value': "false"});
+			return true;
+		}
+		
+		if (next.value == "null") {
+			log("Rule 7");
+			stack.push({'type': LEX_VALUE, 'value': null});
+			return true;
+		}
 	}
 
 	if (is(next, LEX_TOKEN)) {
+		if (is(stack.peek(), LEX_KEY)) {
+			log("Rule 11a");
+			stack.peek().value += next.value;
+			return true;
+		}
+		
 		log("Rule 11c");
 		stack.push({type: LEX_KEY, value: [ next.value ] });
 		return true;
+
 	}
+
+	if (is(next, LEX_INT)) {
+		if (is(next, LEX_INT) && is(stack.peek(), LEX_KEY)) {
+			log("Rule 11b");
+			stack.peek().value += next.value;
+			return true;
+		}
+
+		log("Rule 11f");
+		next.type = LEX_VALUE;
+		stack.push(next);
+		return true;
+	}
+
+
 
 	if (is(next, LEX_QUOTE)) {
 		log("Rule 11d");
@@ -173,13 +183,7 @@ function reduce(stack) {
 		return true;
 	}
 
-	if(is(next, LEX_INT)) {
-		log("Rule 11f");
-		next.type = LEX_VALUE;
-		stack.push(next);
-		return true;
-	}
-	
+
 	if (is(next, LEX_FLOAT)) {
 		log("Rule 11g");
 		next.type = LEX_VALUE;
@@ -187,46 +191,56 @@ function reduce(stack) {
 		return true;
 	}
 
+	if (is(next, LEX_VALUE)) {
+		if (is(stack.peek(), LEX_COMMA)) {
+			log("Rule 12");
+			next.type = LEX_CVALUE;
+			stack.pop();
+			stack.push(next);
+			return true;
+		}
 
-	if (is(next, LEX_VALUE) && is(stack.peek(), LEX_COMMA)) {
-		log("Rule 12");
-		next.type = LEX_CVALUE;
-		stack.pop();
-		stack.push(next);
-		return true;
+		if (is(stack.peek(), LEX_COLON)) {
+			log("Rule 13");
+			next.type = LEX_COVALUE;
+			stack.pop();
+			stack.push(next);
+			return true;
+		}
 	}
 
-	if (is(next, LEX_LIST) && is(stack.peek(), LEX_COMMA)) {
-		log("Rule 12a");
-		next.type = LEX_CVALUE;
-		stack.pop();
-		stack.push(next);
-		return true;
+
+	if (is(next, LEX_LIST)) {
+		if (is(next, LEX_LIST) && is(stack.peek(), LEX_COMMA)) {
+			log("Rule 12a");
+			next.type = LEX_CVALUE;
+			stack.pop();
+			stack.push(next);
+			return true;
+		}
+
+		if (is(stack.peek(), LEX_COLON)) {
+			log("Rule 13a");
+			next.type = LEX_COVALUE;
+			stack.pop();
+			stack.push(next);
+			return true;
+		}
+
 	}
 
-	if (is(next, LEX_OBJ) && is(stack.peek(), LEX_COMMA)) {
-		log("Rule 12b");
-		var toPush = {'type': LEX_CVALUE, 'value': next};
-		stack.pop();
-		stack.push(toPush);
-		return true;
+
+	if (is(next, LEX_OBJ)) {
+		if (is(stack.peek(), LEX_COMMA)) {
+			log("Rule 12b");
+			var toPush = {'type': LEX_CVALUE, 'value': next};
+			stack.pop();
+			stack.push(toPush);
+			return true;
+		}
 	}
 
-	if (is(next, LEX_VALUE) && is(stack.peek(), LEX_COLON)) {
-		log("Rule 13");
-		next.type = LEX_COVALUE;
-		stack.pop();
-		stack.push(next);
-		return true;
-	}
 
-	if (is(next, LEX_LIST) && is(stack.peek(), LEX_COLON)) {
-		log("Rule 13a");
-		next.type = LEX_COVALUE;
-		stack.pop();
-		stack.push(next);
-		return true;
-	}
 
 	if (is(next, LEX_OBJ) && is(stack.peek(), LEX_COLON)) {
 		log("Rule 13b");
