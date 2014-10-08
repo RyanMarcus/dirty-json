@@ -2208,54 +2208,62 @@ function parse(text) {
 function reduce(stack) {
 	var next = stack.pop();
 
+	switch(next.type) {
+	case LEX_KEY:
+		if (next.value == "true") {
+			log("Rule 5");
+			stack.push({'type': LEX_BOOLEAN, 'value': "true"});
+			return true;
+		}
+		
+		
+		if (next.value == "false") {
+			log("Rule 6");
+			stack.push({'type': LEX_BOOLEAN, 'value': "false"});
+			return true;
+		}
+		
+		if (next.value == "null") {
+			log("Rule 7");
+			stack.push({'type': LEX_VALUE, 'value': null});
+			return true;
+		}
+		break;
 
-	if (is(next, LEX_KEY) && next.value == "true") {
-		log("Rule 5");
-		stack.push({'type': LEX_BOOLEAN, 'value': "true"});
-		return true;
-	}
-
-
-	if (is(next, LEX_KEY) && next.value == "false") {
-		log("Rule 6");
-		stack.push({'type': LEX_BOOLEAN, 'value': "false"});
-		return true;
-	}
-
-	if (is(next, LEX_KEY) && next.value == "null") {
-		log("Rule 7");
-		stack.push({'type': LEX_VALUE, 'value': null});
-		return true;
-	}
-
-
-	if (is(next, LEX_TOKEN) && is(stack.peek(), LEX_KEY)) {
-		log("Rule 11a");
-		stack.peek().value += next.value;
-		return true;
-	}
-
-	if (is(next, LEX_INT) && is(stack.peek(), LEX_KEY)) {
-		log("Rule 11b");
-		stack.peek().value += next.value;
-		return true;
-	}
-
-	if (is(next, LEX_TOKEN)) {
+	case LEX_TOKEN:
+		if (is(stack.peek(), LEX_KEY)) {
+			log("Rule 11a");
+			stack.peek().value += next.value;
+			return true;
+		}
+		
 		log("Rule 11c");
 		stack.push({type: LEX_KEY, value: [ next.value ] });
 		return true;
-	}
+		break;
 
-	if (is(next, LEX_QUOTE)) {
+		case LEX_INT:
+		if (is(next, LEX_INT) && is(stack.peek(), LEX_KEY)) {
+			log("Rule 11b");
+			stack.peek().value += next.value;
+			return true;
+		}
+
+		log("Rule 11f");
+		next.type = LEX_VALUE;
+		stack.push(next);
+		return true;
+		break;
+
+	case LEX_QUOTE:
 		log("Rule 11d");
 		next.type = LEX_VALUE;
 		next.value = next.value;
 		stack.push(next);
 		return true;
-	}
+		break;
 
-	if (is(next, LEX_BOOLEAN)) {
+	case LEX_BOOLEAN:
 		log("Rule 11e");
 		next.type = LEX_VALUE;
 
@@ -2267,223 +2275,234 @@ function reduce(stack) {
 
 		stack.push(next);
 		return true;
-	}
+		break;
 
-	if(is(next, LEX_INT)) {
-		log("Rule 11f");
-		next.type = LEX_VALUE;
-		stack.push(next);
-		return true;
-	}
-	
-	if (is(next, LEX_FLOAT)) {
+	case LEX_FLOAT:
 		log("Rule 11g");
 		next.type = LEX_VALUE;
 		stack.push(next);
 		return true;
-	}
+		break;
 
+	case LEX_VALUE:
+		if (is(stack.peek(), LEX_COMMA)) {
+			log("Rule 12");
+			next.type = LEX_CVALUE;
+			stack.pop();
+			stack.push(next);
+			return true;
+		}
 
-	if (is(next, LEX_VALUE) && is(stack.peek(), LEX_COMMA)) {
-		log("Rule 12");
-		next.type = LEX_CVALUE;
-		stack.pop();
-		stack.push(next);
-		return true;
-	}
+		if (is(stack.peek(), LEX_COLON)) {
+			log("Rule 13");
+			next.type = LEX_COVALUE;
+			stack.pop();
+			stack.push(next);
+			return true;
+		}
 
-	if (is(next, LEX_LIST) && is(stack.peek(), LEX_COMMA)) {
-		log("Rule 12a");
-		next.type = LEX_CVALUE;
-		stack.pop();
-		stack.push(next);
-		return true;
-	}
+		if (is(stack.peek(), LEX_KEY) && is(stack.last(1), LEX_VALUE)) {
+			log("Error rule 1");
+			var middleVal = stack.pop();
+			stack.peek().value += '"' + middleVal.value + '"';
+			stack.peek().value += next.value;
+			return true;
+		}
 
-	if (is(next, LEX_OBJ) && is(stack.peek(), LEX_COMMA)) {
-		log("Rule 12b");
-		var toPush = {'type': LEX_CVALUE, 'value': next};
-		stack.pop();
-		stack.push(toPush);
-		return true;
-	}
+		if (is(stack.peek(), LEX_KEY) && is(stack.last(1), LEX_VLIST)) {
+			log("Error rule 2");
+			var middleVal = stack.pop();
+			var oldLastVal = stack.peek().value.pop();
+			oldLastVal +=  '"' + middleVal.value + '"';
+			oldLastVal += next.value;
+			
+			stack.peek().value.push(oldLastVal);
+			
+			return true;
+		}
+		
+		if (is(stack.peek(), LEX_KEY) && is(stack.last(1), LEX_KVLIST)) {
+			log("Error rule 3");
+			var middleVal = stack.pop();
+			var oldLastVal = stack.peek().value.pop();
+			oldLastVal.value +=  '"' + middleVal.value + '"';
+			oldLastVal.value += next.value;
+			
+			stack.peek().value.push(oldLastVal);
+			
+			return true;
+		}
+		break;
 
-	if (is(next, LEX_VALUE) && is(stack.peek(), LEX_COLON)) {
-		log("Rule 13");
-		next.type = LEX_COVALUE;
-		stack.pop();
-		stack.push(next);
-		return true;
-	}
+	case LEX_LIST:
+		if (is(next, LEX_LIST) && is(stack.peek(), LEX_COMMA)) {
+			log("Rule 12a");
+			next.type = LEX_CVALUE;
+			stack.pop();
+			stack.push(next);
+			return true;
+		}
 
-	if (is(next, LEX_LIST) && is(stack.peek(), LEX_COLON)) {
-		log("Rule 13a");
-		next.type = LEX_COVALUE;
-		stack.pop();
-		stack.push(next);
-		return true;
-	}
+		if (is(stack.peek(), LEX_COLON)) {
+			log("Rule 13a");
+			next.type = LEX_COVALUE;
+			stack.pop();
+			stack.push(next);
+			return true;
+		}
+		break;
 
-	if (is(next, LEX_OBJ) && is(stack.peek(), LEX_COLON)) {
-		log("Rule 13b");
-		var toPush = {'type': LEX_COVALUE, 'value': next};
-		stack.pop();
-		stack.push(toPush);
-		return true;
-	}
-	
-	if (is(next, LEX_CVALUE) && is(stack.peek(), LEX_VLIST)) {
-		log("Rule 14");
-		stack.peek().value.push(next.value);
-		return true;
-	}
+	case LEX_OBJ:
+		if (is(stack.peek(), LEX_COMMA)) {
+			log("Rule 12b");
+			var toPush = {'type': LEX_CVALUE, 'value': next};
+			stack.pop();
+			stack.push(toPush);
+			return true;
+		}
 
-	if (is(next, LEX_CVALUE)) {
+		if (is(stack.peek(), LEX_COLON)) {
+			log("Rule 13b");
+			var toPush = {'type': LEX_COVALUE, 'value': next};
+			stack.pop();
+			stack.push(toPush);
+			return true;
+		}
+		break;
+
+	case LEX_CVALUE:
+		if (is(stack.peek(), LEX_VLIST)) {
+			log("Rule 14");
+			stack.peek().value.push(next.value);
+			return true;
+		}
+		
+		
 		log("Rule 15");
 		stack.push({'type': LEX_VLIST, 'value': [next.value]});
 		return true;
-	}
+		break;
 
-	if (is(next, LEX_VLIST) && is(stack.peek(), LEX_VALUE)) {
-		log("Rule 15a");
-		next.value.unshift(stack.peek().value);
-		stack.pop();
-		stack.push(next);
-		return true;
-	}
+	case LEX_VLIST:
+		if (is(stack.peek(), LEX_VALUE)) {
+			log("Rule 15a");
+			next.value.unshift(stack.peek().value);
+			stack.pop();
+			stack.push(next);
+			return true;
+		}
+		
+		if (is(stack.peek(), LEX_LIST)) {
+			log("Rule 15b");
+			next.value.unshift(stack.peek().value);
+			stack.pop();
+			stack.push(next);
+			return true;
+		}
+		
+		if (is(stack.peek(), LEX_OBJ)) {
+			log("Rule 15c");
+			next.value.unshift(stack.peek());
+			stack.pop();
+			stack.push(next);
+			return true;
+		}
+		break;
 
-	if (is(next, LEX_VLIST) && is(stack.peek(), LEX_LIST)) {
-		log("Rule 15b");
-		next.value.unshift(stack.peek().value);
-		stack.pop();
-		stack.push(next);
-		return true;
-	}
+	case LEX_COVALUE:
+		if (is(stack.peek(), LEX_KEY)) {
+			log("Rule 16");
+			var key = stack.pop();
+			stack.push({'type': LEX_KV, 'key': key.value, 'value': next.value});
+			return true;
+		}
+		
+		if (is(stack.peek(), LEX_VALUE)) {
+			log("Rule 16a");
+			var key = stack.pop();
+			stack.push({'type': LEX_KV, 'key': key.value, 'value': next.value});
+			return true;
+		}
+		
+		if (is(stack.peek(), LEX_VLIST)) {
+			log("Rule 16b");
+			var key = stack.pop();
+			key.value.forEach(function (i) {
+				stack.push({'type': LEX_KV, 'key': i, 'value': next.value});
+			});
+			return true;
+		}
+		break;
 
-	if (is(next, LEX_VLIST) && is(stack.peek(), LEX_OBJ)) {
-		log("Rule 15c");
-		next.value.unshift(stack.peek());
-		stack.pop();
-		stack.push(next);
-		return true;
-	}
+	case LEX_KV:
+		if (is(stack.last(0), LEX_COMMA) && is(stack.last(1), LEX_KVLIST)) {
+			log("Rule 17");
+			stack.last(1).value.push(next);
+			stack.pop();
+			return true;
+		}	
+		
 
-	if (is(next, LEX_COVALUE) && is(stack.peek(), LEX_KEY)) {
-		log("Rule 16");
-		var key = stack.pop();
-		stack.push({'type': LEX_KV, 'key': key.value, 'value': next.value});
-		return true;
-	}
 
-	if (is(next, LEX_COVALUE) && is(stack.peek(), LEX_VALUE)) {
-		log("Rule 16a");
-		var key = stack.pop();
-		stack.push({'type': LEX_KV, 'key': key.value, 'value': next.value});
-		return true;
-	}
-
-	if (is(next, LEX_COVALUE) && is(stack.peek(), LEX_VLIST)) {
-		log("Rule 16b");
-		var key = stack.pop();
-		key.value.forEach(function (i) {
-			stack.push({'type': LEX_KV, 'key': i, 'value': next.value});
-		});
-		return true;
-	}
-
-	if (is(next, LEX_KV) && is(stack.last(0), LEX_COMMA) && is(stack.last(1), LEX_KVLIST)) {
-		log("Rule 17");
-		stack.last(1).value.push(next);
-		stack.pop();
-		return true;
-	}
-
-	if (is(next, LEX_KVLIST) && is(stack.peek(), LEX_KVLIST)) {
-		log("Rule 17a");
-		next.value.forEach(function (i) {
-			stack.peek().value.push(i);
-		});
-
-		return true;
-	}
-
-	if (is(next, LEX_KV)) {
 		log("Rule 18");
 		stack.push({'type': LEX_KVLIST, 'value': [next]});
 		return true;
+		break;
+
+	case LEX_KVLIST:
+		if (is(stack.peek(), LEX_KVLIST)) {
+			log("Rule 17a");
+			next.value.forEach(function (i) {
+				stack.peek().value.push(i);
+			});
+			
+			return true;
+		}
+		break;
+		
+	case LEX_RB:
+		if (is(stack.peek(), LEX_VLIST) && is(stack.last(1), LEX_LB)) {
+			log("Rule 19");
+			var l = stack.pop();
+			stack.pop();
+			stack.push({'type': LEX_LIST, 'value': l.value});
+			return true;
+		}
+		
+		if (is(stack.peek(), LEX_LB)) {
+			log("Rule 22");
+			stack.pop();
+			stack.push({type: LEX_LIST, 'value': []});
+			return true;
+		}
+		
+		if (is(stack.peek(), LEX_VALUE) && is(stack.last(1), LEX_LB)) {
+			log("Rule 23");
+			var val = stack.pop().value;
+			stack.pop();
+			stack.push({type: LEX_LIST, 'value': [val]});
+			return true;
+		}
+		break;	
+
+	case LEX_RCB:
+		if (is(stack.peek(), LEX_KVLIST) && (stack.last(1), LEX_LCB)) {
+			log("Rule 20");
+			var l = stack.pop();
+			stack.pop();
+			stack.push({'type': LEX_OBJ, 'value': l.value});
+			return true;
+		}
+		
+		if (is(stack.peek(), LEX_LCB)) {
+			log("Rule 21");
+			stack.pop();
+			stack.push({type: LEX_OBJ, 'value': null});
+			return true;
+		}
+		break;
 	}
 
-	if (is(next, LEX_RB) && is(stack.peek(), LEX_VLIST) && is(stack.last(1), LEX_LB)) {
-		log("Rule 19");
-		var l = stack.pop();
-		stack.pop();
-		stack.push({'type': LEX_LIST, 'value': l.value});
-		return true;
-	}
-
-
-	if (is(next, LEX_RCB) && is(stack.peek(), LEX_KVLIST) && (stack.last(1), LEX_LCB)) {
-		log("Rule 20");
-		var l = stack.pop();
-		stack.pop();
-		stack.push({'type': LEX_OBJ, 'value': l.value});
-		return true;
-	}
-
-	if (is(next, LEX_RCB) && is(stack.peek(), LEX_LCB)) {
-		log("Rule 21");
-		stack.pop();
-		stack.push({type: LEX_OBJ, 'value': null});
-		return true;
-	}
-
-	if (is(next, LEX_RB) && is(stack.peek(), LEX_LB)) {
-		log("Rule 22");
-		stack.pop();
-		stack.push({type: LEX_LIST, 'value': []});
-		return true;
-	}
-
-	if (is(next, LEX_RB) && is(stack.peek(), LEX_VALUE) && is(stack.last(1), LEX_LB)) {
-		log("Rule 23");
-		var val = stack.pop().value;
-		stack.pop();
-		stack.push({type: LEX_LIST, 'value': [val]});
-		return true;
-	}
-
-	// begin ERROR CASES
-	if (is(next, LEX_VALUE) && is(stack.peek(), LEX_KEY) && is(stack.last(1), LEX_VALUE)) {
-		log("Error rule 1");
-		var middleVal = stack.pop();
-		stack.peek().value += '"' + middleVal.value + '"';
-		stack.peek().value += next.value;
-		return true;
-	}
-
-	if (is(next, LEX_VALUE) && is(stack.peek(), LEX_KEY) && is(stack.last(1), LEX_VLIST)) {
-		log("Error rule 2");
-		var middleVal = stack.pop();
-		var oldLastVal = stack.peek().value.pop();
-		oldLastVal +=  '"' + middleVal.value + '"';
-		oldLastVal += next.value;
-
-		stack.peek().value.push(oldLastVal);
-
-		return true;
-	}
-
-	if (is(next, LEX_VALUE) && is(stack.peek(), LEX_KEY) && is(stack.last(1), LEX_KVLIST)) {
-		log("Error rule 3");
-		var middleVal = stack.pop();
-		var oldLastVal = stack.peek().value.pop();
-		oldLastVal.value +=  '"' + middleVal.value + '"';
-		oldLastVal.value += next.value;
-
-		stack.peek().value.push(oldLastVal);
-
-		return true;
-	}
 
 	stack.push(next);
 	return false;
