@@ -76,6 +76,10 @@ describe("parser", function () {
 		});
 
 		it('should handle a list of numbers, strings, and booleans', function (done) {
+			compareResults("[3, 4, -2, \"5.5\", 0.5, false, true, false]", done);
+		});
+
+		it('should handle a list of numbers, strings, and booleans', function (done) {
 			compareResults('["some text", 4, "some more text", "text"]', done);
 		});
 
