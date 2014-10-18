@@ -3,6 +3,9 @@
 
 [![NPM](https://nodei.co/npm/dirty-json.png?compact=true)](https://nodei.co/npm/dirty-json/)
 
+![Dependency monitor](https://david-dm.org/ryanmarcus/dirty-json.png)
+
+
 A JSON parser that tries to handle non-conforming or otherwise invalid JSON.
 
 This is still under *heavy development*. Most notably, I need to make a lot of the internals of the parser asynchronous.
