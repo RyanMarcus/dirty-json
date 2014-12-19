@@ -10,7 +10,8 @@ angular.module('djson', []).controller('DemoCtrl', ['$scope', function($scope) {
 		{"name": "Valid JSON: Complex Object", "content": '{ "key": ["value", 0.5, \n\t{ "test": 56, \n\t"test2": [true, null] }\n\t]\n}'},
 		{"name": "Invalid JSON: Complex Object", "content": '{ key: ["value", .5, \n\t{ "test": 56, \n\t\'test2\': [true, null] }\n\t]\n}'},
 		{"name": "Invalid JSON: With newlines", "content": '{ "key": "a string\nwith a newline" }'},
-		{"name": "Invalid JSON: Floats", "content": '{ "no leading zero": .13452 }'}
+		{"name": "Invalid JSON: Floats", "content": '{ "no leading zero": .13452 }'},
+		{"name": "Invalid JSON: Non-quoted keys", "content": '{ "test": here, "another": test }'}
 	];
 	
 

@@ -63,20 +63,6 @@ function log(str) {
 	//console.log(str);
 }
 
-function parseStream(stream) {
-	var stack = [];
-
-	var procStack = function() {
-		
-	};
-
-	stream.on('data', function (d) {
-		for (var i = 0; i < d.length; i++) {
-			stack.push(d.charAt(i));
-			procStack();
-		}
-	});
-}
 
 
 module.exports.parse = parse;
@@ -144,9 +130,9 @@ function reduce(stack) {
 		log("Rule 11c");
 		stack.push({type: LEX_KEY, value: [ next.value ] });
 		return true;
-		break;
 
-		case LEX_INT:
+
+	case LEX_INT:
 		if (is(next, LEX_INT) && is(stack.peek(), LEX_KEY)) {
 			log("Rule 11b");
 			stack.peek().value += next.value;
@@ -157,7 +143,7 @@ function reduce(stack) {
 		next.type = LEX_VALUE;
 		stack.push(next);
 		return true;
-		break;
+
 
 	case LEX_QUOTE:
 		log("Rule 11d");
@@ -165,7 +151,7 @@ function reduce(stack) {
 		next.value = next.value;
 		stack.push(next);
 		return true;
-		break;
+
 
 	case LEX_BOOLEAN:
 		log("Rule 11e");
@@ -179,14 +165,13 @@ function reduce(stack) {
 
 		stack.push(next);
 		return true;
-		break;
+
 
 	case LEX_FLOAT:
 		log("Rule 11g");
 		next.type = LEX_VALUE;
 		stack.push(next);
 		return true;
-		break;
 
 	case LEX_VALUE:
 		if (is(stack.peek(), LEX_COMMA)) {
@@ -285,7 +270,6 @@ function reduce(stack) {
 		log("Rule 15");
 		stack.push({'type': LEX_VLIST, 'value': [next.value]});
 		return true;
-		break;
 
 	case LEX_VLIST:
 		if (is(stack.peek(), LEX_VALUE)) {
@@ -351,7 +335,7 @@ function reduce(stack) {
 		log("Rule 18");
 		stack.push({'type': LEX_KVLIST, 'value': [next]});
 		return true;
-		break;
+
 
 	case LEX_KVLIST:
 		if (is(stack.peek(), LEX_KVLIST)) {
@@ -360,6 +344,18 @@ function reduce(stack) {
 				stack.peek().value.push(i);
 			});
 			
+			return true;
+		}
+
+		if (is(stack.peek(), LEX_KEY) && (stack.last(1), LEX_COLON)) {
+			log("Error rule 5");
+			var l = stack.pop();
+			//stack.pop();
+			stack.push({type: LEX_VALUE, 'value': l.value});
+			log("Start subreduce... (" + l.value + ")");
+			while(reduce(stack));
+			log("End subreduce");
+			stack.push(next);
 			return true;
 		}
 		break;
@@ -402,6 +398,18 @@ function reduce(stack) {
 			log("Rule 21");
 			stack.pop();
 			stack.push({type: LEX_OBJ, 'value': null});
+			return true;
+		}
+
+		if (is(stack.peek(), LEX_KEY) && (stack.last(1), LEX_COLON)) {
+			log("Error rule 4");
+			var l = stack.pop();
+			//stack.pop();
+			stack.push({type: LEX_VALUE, 'value': l.value});
+			log("Start subreduce... (" + l.value + ")");
+			while(reduce(stack));
+			log("End subreduce");
+			stack.push({type: LEX_RCB});
 			return true;
 		}
 		break;
@@ -479,6 +487,13 @@ VList = VList key value
 -- for the case of {"t": "some "text" here"}
 KVList = KVList key value
 
+-- for the case of {"this": that}
+When last in RCB, 
+value = COLON key (re-reduce)
+
+-- for the case of {"this": that, "another": "maybe"}
+When last is KVList,
+value = COLON key (re-reduce)
 */
 
 
@@ -510,11 +525,15 @@ function compileOST(tree) {
 		return toR;
 	}
 
+	/* istanbul ignore else  */
 	if (is(tree, LEX_LIST)) {
 		return compileOST(tree.value);
 	}
 
+	/* istanbul ignore next */
 	console.error("Uncaught type in compile: " + JSON.stringify(tree));
+
+	/* istanbul ignore next */
 	return null;
 }
 

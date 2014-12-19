@@ -124,9 +124,7 @@ function lex(nextFunc, peekFunc, emit) {
 	}
 }
 
-function printEmit(token) {
-	console.log(token);
-}
+
 
 module.exports.lexString = lexString;
 function lexString(str, emit) {
