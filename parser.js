@@ -346,6 +346,18 @@ function reduce(stack) {
 			
 			return true;
 		}
+
+		if (is(stack.peek(), LEX_KEY) && (stack.last(1), LEX_COLON)) {
+			log("Error rule 5");
+			var l = stack.pop();
+			//stack.pop();
+			stack.push({type: LEX_VALUE, 'value': l.value});
+			log("Start subreduce... (" + l.value + ")");
+			while(reduce(stack));
+			log("End subreduce");
+			stack.push(next);
+			return true;
+		}
 		break;
 		
 	case LEX_RB:
@@ -476,7 +488,12 @@ VList = VList key value
 KVList = KVList key value
 
 -- for the case of {"this": that}
-value = COLON key RCB
+When last in RCB, 
+value = COLON key (re-reduce)
+
+-- for the case of {"this": that, "another": "maybe"}
+When last is KVList,
+value = COLON key (re-reduce)
 */
 
 

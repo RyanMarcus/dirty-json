@@ -5,6 +5,6 @@ function parse(text) {
 	return parser.parse(text);
 }
 
-//parse('{ "this": that }').then(function (res) {
-// 	console.log(res);
-//});
+parse('{ "this": that, "another": "maybe" }').then(function (res) {
+ 	console.log(res);
+});

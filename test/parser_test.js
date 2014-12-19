@@ -177,6 +177,19 @@ describe("parser", function () {
 		it('should handle non-quoted string values', function(done) {
 			compareResultsToValid('{"this": that}', '{"this": "that"}', done);
 		});
+
+		it('should handle non-quoted string values', function(done) {
+			compareResultsToValid('{"this": that, "another": "maybe"}', '{"this": "that", "another": "maybe"}', done);
+		});
+
+		it('should handle non-quoted string values', function(done) {
+			compareResultsToValid('{"this": "that", "another": maybe}', '{"this": "that", "another": "maybe"}', done);
+		});
+
+	it('should handle non-quoted string values', function(done) {
+			compareResultsToValid('{"this": that, "another": maybe}', '{"this": "that", "another": "maybe"}', done);
+		});
+		
 		
 		
 		
