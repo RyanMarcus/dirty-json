@@ -173,8 +173,13 @@ describe("parser", function () {
 		it('should handle quotes-in-quotes (object)', function(done) {
 			compareResultsToValid('{"test0": false, "test": "some "quoted" text", "test1": 5}', '{"test0": false, "test": "some \\"quoted\\" text", "test1": 5}', done);
 		});
-
-
+		
+		it('should handle non-quoted string values', function(done) {
+			compareResultsToValid('{"this": that}', '{"this": "that"}', done);
+		});
+		
+		
+		
 		describe("with new lines", function() {
 			it ('should handle a newline in a string in object', function(done) {
 				

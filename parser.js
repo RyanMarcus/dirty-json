@@ -388,6 +388,18 @@ function reduce(stack) {
 			stack.push({type: LEX_OBJ, 'value': null});
 			return true;
 		}
+
+		if (is(stack.peek(), LEX_KEY) && (stack.last(1), LEX_COLON)) {
+			log("Error rule 4");
+			var l = stack.pop();
+			//stack.pop();
+			stack.push({type: LEX_VALUE, 'value': l.value});
+			log("Start subreduce... (" + l.value + ")");
+			while(reduce(stack));
+			log("End subreduce");
+			stack.push({type: LEX_RCB});
+			return true;
+		}
 		break;
 	}
 
@@ -463,6 +475,8 @@ VList = VList key value
 -- for the case of {"t": "some "text" here"}
 KVList = KVList key value
 
+-- for the case of {"this": that}
+value = COLON key RCB
 */
 
 
