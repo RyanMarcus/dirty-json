@@ -295,6 +295,25 @@ function reduce(stack) {
 			stack.push(next);
 			return true;
 		}
+		
+		if (is(stack.peek(), LEX_KEY) && (stack.last(1), LEX_COMMA)) {
+			log("Error rule 7");
+			var l = stack.pop();
+			//stack.pop();
+			stack.push({type: LEX_VALUE, 'value': l.value});
+			log("Start subreduce... (" + l.value + ")");
+			while(reduce(stack));
+			log("End subreduce");
+			stack.push(next);
+
+			return true;
+		}
+
+		if (is(stack.peek(), LEX_VLIST)) {
+			log("Error rule 8");
+			stack.peek().value.push(next.value[0]);
+			return true;
+		}
 		break;
 
 	case LEX_COVALUE:
@@ -383,6 +402,19 @@ function reduce(stack) {
 			stack.push({type: LEX_LIST, 'value': [val]});
 			return true;
 		}
+
+		if (is(stack.peek(), LEX_KEY) && (stack.last(1), LEX_COMMA)) {
+			log("Error rule 5");
+			var l = stack.pop();
+			//stack.pop();
+			stack.push({type: LEX_VALUE, 'value': l.value});
+			log("Start subreduce... (" + l.value + ")");
+			while(reduce(stack));
+			log("End subreduce");
+			stack.push({type: LEX_RB});
+			return true;
+		}
+
 		break;	
 
 	case LEX_RCB:
@@ -494,6 +526,19 @@ value = COLON key (re-reduce)
 -- for the case of {"this": that, "another": "maybe"}
 When last is KVList,
 value = COLON key (re-reduce)
+
+-- for the case of ["this", that]
+when last is a RB,
+value = COMMA key (re-reduce)
+
+-- for the case of ["this", that, "another"]
+When last is a VList,
+value = COMMA key (re-reduce)
+
+AND
+
+VList = VList VList
+
 */
 
 
@@ -537,3 +582,7 @@ function compileOST(tree) {
 	return null;
 }
 
+
+/*parse('["this", that, "another"]').then(function (res) {
+	console.log(res);
+});*/
