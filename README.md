@@ -8,7 +8,7 @@
 
 A JSON parser that tries to handle non-conforming or otherwise invalid JSON.
 
-This is still under *heavy development*. Most notably, I need to make a lot of the internals of the parser asynchronous.
+I still need to make a lot of the internals of the parser asynchronous.
 
 You can play around with a demo here: [http://rmarcus.info/dirty-json/](http://rmarcus.info/dirty-json)
 
@@ -67,7 +67,7 @@ While these are obviously cringe-worthy, we still a way to parse them. `dirty-js
 Since `dirty-json` is handling malformed JSON, it will not always produce the result that you "think" it should. That's why you should only use this when you absolutely need it. Malformed JSON is malformed for a reason.
 
 ## How does it work?
-Currently `dirty-json` uses a hand-written lexer and `LR(1)` parser. It shouldn't be used in any environment that requires reliable or fast results.
+Currently `dirty-json` uses a lexer [powered by lex](https://github.com/aaditmshah/lexer) and a hand-written `LR(1)` parser. It shouldn't be used in any environment that requires reliable or fast results.
 
 ## License
 > Copyright 2016, 2015, 2014 Ryan Marcus
