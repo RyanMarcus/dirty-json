@@ -14,8 +14,10 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with dirty-json.  If not, see <http://www.gnu.org/licenses/>.
 
+"use strict";
 
-var Q = require("q");
+let Q = require("q");
+let Lexer = require("lex");
 
 // terminals
 const LEX_KV = 0;
@@ -53,102 +55,67 @@ var lexMap = {
 	".": {type: LEX_DOT} // TODO: remove?
 };
 
-function lex(nextFunc, peekFunc, emit) {
-	
-	var sym;
-	while ((sym = nextFunc())) {
-		var curr = [];
+var lexSpc = [
+	[/:/, LEX_COLON],
+	[/,/, LEX_COMMA],
+	[/{/, LEX_LCB],
+	[/}/, LEX_RCB],
+	[/\[/, LEX_LB],
+	[/\]/, LEX_RB],
+	[/\./, LEX_DOT] // TODO: remove?
+];
+
+function getLexer(string) {
+	let lexer = new Lexer();
+	lexer.addRule(/"([\s\S]*?)("|$)/, (lexeme, txt) => {
+		return {type: LEX_QUOTE, value: txt};
+	});
+
+	lexer.addRule(/'([\s\S]*?)('|$)/, (lexeme, txt) => {
+		return {type: LEX_QUOTE, value: txt};
+	});
+
+	lexer.addRule(/[\-0-9]*\.[0-9]+/, lexeme => {
+		return {type: LEX_FLOAT, value: parseFloat(lexeme)};
+	});
+
+	lexer.addRule(/[\-0-9]+/, lexeme => {
+		return {type: LEX_INT, value: parseInt(lexeme)};
+	});
+
+	lexSpc.forEach(item => {
+		lexer.addRule(item[0], lexeme => {
+			return {type: item[1], value: lexeme};
+		});
+	});
+
+	lexer.addRule(/\s/, lexeme => {
+		// chomp whitespace...
+	});
+
+	lexer.addRule(/./, lexeme => {
+		let lt = LEX_TOKEN;
+		let val = lexeme;
+
 		
-		if (sym == '"') {
-			// chomp until we hit another quote
-			while (true) {
-				sym = nextFunc();
-				if (sym == '"' || !sym) {
-					emit({type: LEX_QUOTE, value: curr.join("")});
-					curr = [];
-					break;
-				}
+		return {type: lt, value: val};
+	});
 
-				curr.push(sym);
-			}
-			continue;
-		}
+	lexer.setInput(string);
 
-		if (sym == "'") {
-			// chomp until we hit another quote
-			while (true) {
-				sym = nextFunc();
-				if (sym == "'" || !sym) {
-					emit({type: LEX_QUOTE, value: curr.join("")});
-					curr = [];
-					break;
-				}
-
-				curr.push(sym);
-			}
-			continue;
-		}
-
-		if (sym.match("[\\-0-9\\.]")) {
-			// chomp until we get a non-integer
-			curr.push(sym);
-			while (true) {
-				if (peekFunc() && 
-				    (peekFunc().match("[0-9]") || peekFunc() == ".")) {
-					curr.push(nextFunc());
-					continue;
-				}
-				break;
-			}
-
-			if (curr.indexOf(".") != -1) {
-				emit({type: LEX_FLOAT, value: parseFloat(curr.join(""))});
-			} else {
-				emit({type: LEX_INT, value: parseInt(curr.join(""))});
-			}
-
-			curr = [];
-			continue;
-		}
-
-		// skip whitespace
-		if (sym.match("\\s"))
-			continue;
-
-		if (sym in lexMap) {
-			emit(lexMap[sym]);
-			continue;
-		}
-
-		emit({type: LEX_TOKEN, value: sym});
-	}
+	return lexer;
 }
 
 
 
 module.exports.lexString = lexString;
 function lexString(str, emit) {
-	var s = str;
+	let lex = getLexer(str);
 
-
-	var next = function() {
-		if (s.length == 0)
-			return false;
-
-		var toR = s.charAt(0);
-		s = s.substring(1);
-		return toR;
-	};
-
-	var peek = function() {
-		if (s.length == 0)
-			return false;
-
-
-		return s.charAt(0);
-	};
-
-	lex(next, peek, emit);
+	let token = "";
+	while ((token = lex.lex())) {
+		emit(token);
+	}
 	
 }
 
@@ -170,6 +137,6 @@ function getAllTokens(str) {
 
 
 
-//getAllTokens('5600').then(function(res) {
-// 	console.log(res);
-//});
+/*getAllTokens('{ "test0": "a '+"\n"+'string" }').then(function(res) {
+ 	console.log(res);
+});*/

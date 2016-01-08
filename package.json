@@ -1,6 +1,6 @@
 {
   "name": "dirty-json",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "A permissive parser for dirty JSON data that does its best",
   "main": "dirty-json.js",
   "scripts": {
@@ -11,8 +11,9 @@
     "parser"
   ],
   "author": "Ryan Marcus <ryan@rmarcus.info>",
-  "license": "GNU Affero GPLv3",
+  "license": "AGPL-3.0",
   "dependencies": {
+    "lex": "^1.7.9",
     "q": "^1.0.1"
   },
   "devDependencies": {

@@ -582,6 +582,6 @@ function compileOST(tree) {
 }
 
 
-/*parse('["this", that, "another"]').then(function (res) {
+/*parse('[4]').then(function (res) {
 	console.log(res);
 });*/
