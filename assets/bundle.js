@@ -1,17 +1,5 @@
 require=(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({"./dirty-json":[function(require,module,exports){
-var parser = require('./parser');
-
-module.exports.parse = parse;
-function parse(text) {
-	return parser.parse(text);
-}
-
-/*parse('{ "this": that, "another": "maybe" }').then(function (res) {
- 	console.log(res);
-});*/
-
-},{"./parser":3}],1:[function(require,module,exports){
-// Copyright 2014 Ryan Marcus
+// Copyright 2015, 2014 Ryan Marcus
 // This file is part of dirty-json.
 // 
 // dirty-json is free software: you can redistribute it and/or modify
@@ -27,8 +15,38 @@ function parse(text) {
 // You should have received a copy of the GNU Affero General Public License
 // along with dirty-json.  If not, see <http://www.gnu.org/licenses/>.
 
+var parser = require('./parser');
 
-var Q = require("q");
+module.exports.parse = parse;
+function parse(text) {
+	return parser.parse(text);
+}
+
+/*parse('{ "this": that, "another": "maybe" }').then(function (res) {
+ 	console.log(res);
+});*/
+
+},{"./parser":4}],1:[function(require,module,exports){
+// Copyright 2016, 2015, 2014 Ryan Marcus
+// This file is part of dirty-json.
+// 
+// dirty-json is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+// 
+// dirty-json is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+// 
+// You should have received a copy of the GNU Affero General Public License
+// along with dirty-json.  If not, see <http://www.gnu.org/licenses/>.
+
+"use strict";
+
+let Q = require("q");
+let Lexer = require("lex");
 
 // terminals
 const LEX_KV = 0;
@@ -66,102 +84,67 @@ var lexMap = {
 	".": {type: LEX_DOT} // TODO: remove?
 };
 
-function lex(nextFunc, peekFunc, emit) {
-	
-	var sym;
-	while ((sym = nextFunc())) {
-		var curr = [];
+var lexSpc = [
+	[/:/, LEX_COLON],
+	[/,/, LEX_COMMA],
+	[/{/, LEX_LCB],
+	[/}/, LEX_RCB],
+	[/\[/, LEX_LB],
+	[/\]/, LEX_RB],
+	[/\./, LEX_DOT] // TODO: remove?
+];
+
+function getLexer(string) {
+	let lexer = new Lexer();
+	lexer.addRule(/"([\s\S]*?)("|$)/, (lexeme, txt) => {
+		return {type: LEX_QUOTE, value: txt};
+	});
+
+	lexer.addRule(/'([\s\S]*?)('|$)/, (lexeme, txt) => {
+		return {type: LEX_QUOTE, value: txt};
+	});
+
+	lexer.addRule(/[\-0-9]*\.[0-9]+/, lexeme => {
+		return {type: LEX_FLOAT, value: parseFloat(lexeme)};
+	});
+
+	lexer.addRule(/[\-0-9]+/, lexeme => {
+		return {type: LEX_INT, value: parseInt(lexeme)};
+	});
+
+	lexSpc.forEach(item => {
+		lexer.addRule(item[0], lexeme => {
+			return {type: item[1], value: lexeme};
+		});
+	});
+
+	lexer.addRule(/\s/, lexeme => {
+		// chomp whitespace...
+	});
+
+	lexer.addRule(/./, lexeme => {
+		let lt = LEX_TOKEN;
+		let val = lexeme;
+
 		
-		if (sym == '"') {
-			// chomp until we hit another quote
-			while (true) {
-				sym = nextFunc();
-				if (sym == '"' || !sym) {
-					emit({type: LEX_QUOTE, value: curr.join("")});
-					curr = [];
-					break;
-				}
+		return {type: lt, value: val};
+	});
 
-				curr.push(sym);
-			}
-			continue;
-		}
+	lexer.setInput(string);
 
-		if (sym == "'") {
-			// chomp until we hit another quote
-			while (true) {
-				sym = nextFunc();
-				if (sym == "'" || !sym) {
-					emit({type: LEX_QUOTE, value: curr.join("")});
-					curr = [];
-					break;
-				}
-
-				curr.push(sym);
-			}
-			continue;
-		}
-
-		if (sym.match("[\\-0-9\\.]")) {
-			// chomp until we get a non-integer
-			curr.push(sym);
-			while (true) {
-				if (peekFunc() && 
-				    (peekFunc().match("[0-9]") || peekFunc() == ".")) {
-					curr.push(nextFunc());
-					continue;
-				}
-				break;
-			}
-
-			if (curr.indexOf(".") != -1) {
-				emit({type: LEX_FLOAT, value: parseFloat(curr.join(""))});
-			} else {
-				emit({type: LEX_INT, value: parseInt(curr.join(""))});
-			}
-
-			curr = [];
-			continue;
-		}
-
-		// skip whitespace
-		if (sym.match("\\s"))
-			continue;
-
-		if (sym in lexMap) {
-			emit(lexMap[sym]);
-			continue;
-		}
-
-		emit({type: LEX_TOKEN, value: sym});
-	}
+	return lexer;
 }
 
 
 
 module.exports.lexString = lexString;
 function lexString(str, emit) {
-	var s = str;
+	let lex = getLexer(str);
 
-
-	var next = function() {
-		if (s.length == 0)
-			return false;
-
-		var toR = s.charAt(0);
-		s = s.substring(1);
-		return toR;
-	};
-
-	var peek = function() {
-		if (s.length == 0)
-			return false;
-
-
-		return s.charAt(0);
-	};
-
-	lex(next, peek, emit);
+	let token = "";
+	while ((token = lex.lex())) {
+		emit(token);
+	}
 	
 }
 
@@ -183,11 +166,159 @@ function getAllTokens(str) {
 
 
 
-//getAllTokens('5600').then(function(res) {
-// 	console.log(res);
-//});
+/*getAllTokens('{ "test0": "a '+"\n"+'string" }').then(function(res) {
+ 	console.log(res);
+});*/
 
-},{"q":2}],2:[function(require,module,exports){
+},{"lex":2,"q":3}],2:[function(require,module,exports){
+if (typeof module === "object" && typeof module.exports === "object") module.exports = Lexer;
+
+Lexer.defunct = function (chr) {
+    throw new Error("Unexpected character at index " + (this.index - 1) + ": " + chr);
+};
+
+function Lexer(defunct) {
+    if (typeof defunct !== "function") defunct = Lexer.defunct;
+
+    var tokens = [];
+    var rules = [];
+    var remove = 0;
+    this.state = 0;
+    this.index = 0;
+    this.input = "";
+
+    this.addRule = function (pattern, action, start) {
+        var global = pattern.global;
+
+        if (!global) {
+            var flags = "g";
+            if (pattern.multiline) flags += "m";
+            if (pattern.ignoreCase) flags += "i";
+            pattern = new RegExp(pattern.source, flags);
+        }
+
+        if (Object.prototype.toString.call(start) !== "[object Array]") start = [0];
+
+        rules.push({
+            pattern: pattern,
+            global: global,
+            action: action,
+            start: start
+        });
+
+        return this;
+    };
+
+    this.setInput = function (input) {
+        remove = 0;
+        this.state = 0;
+        this.index = 0;
+        tokens.length = 0;
+        this.input = input;
+        return this;
+    };
+
+    this.lex = function () {
+        if (tokens.length) return tokens.shift();
+
+        this.reject = true;
+
+        while (this.index <= this.input.length) {
+            var matches = scan.call(this).splice(remove);
+            var index = this.index;
+
+            while (matches.length) {
+                if (this.reject) {
+                    var match = matches.shift();
+                    var result = match.result;
+                    var length = match.length;
+                    this.index += length;
+                    this.reject = false;
+                    remove++;
+
+                    var token = match.action.apply(this, result);
+                    if (this.reject) this.index = result.index;
+                    else if (typeof token !== "undefined") {
+                        switch (Object.prototype.toString.call(token)) {
+                        case "[object Array]":
+                            tokens = token.slice(1);
+                            token = token[0];
+                        default:
+                            if (length) remove = 0;
+                            return token;
+                        }
+                    }
+                } else break;
+            }
+
+            var input = this.input;
+
+            if (index < input.length) {
+                if (this.reject) {
+                    remove = 0;
+                    var token = defunct.call(this, input.charAt(this.index++));
+                    if (typeof token !== "undefined") {
+                        if (Object.prototype.toString.call(token) === "[object Array]") {
+                            tokens = token.slice(1);
+                            return token[0];
+                        } else return token;
+                    }
+                } else {
+                    if (this.index !== index) remove = 0;
+                    this.reject = true;
+                }
+            } else if (matches.length)
+                this.reject = true;
+            else break;
+        }
+    };
+
+    function scan() {
+        var matches = [];
+        var index = 0;
+
+        var state = this.state;
+        var lastIndex = this.index;
+        var input = this.input;
+
+        for (var i = 0, length = rules.length; i < length; i++) {
+            var rule = rules[i];
+            var start = rule.start;
+            var states = start.length;
+
+            if ((!states || start.indexOf(state) >= 0) ||
+                (state % 2 && states === 1 && !start[0])) {
+                var pattern = rule.pattern;
+                pattern.lastIndex = lastIndex;
+                var result = pattern.exec(input);
+
+                if (result && result.index === lastIndex) {
+                    var j = matches.push({
+                        result: result,
+                        action: rule.action,
+                        length: result[0].length
+                    });
+
+                    if (rule.global) index = j;
+
+                    while (--j > index) {
+                        var k = j - 1;
+
+                        if (matches[j].length > matches[k].length) {
+                            var temple = matches[j];
+                            matches[j] = matches[k];
+                            matches[k] = temple;
+                        }
+                    }
+                }
+            }
+        }
+
+        return matches;
+    }
+}
+
+},{}],3:[function(require,module,exports){
 (function (process){
 // vim:ts=4:sts=4:sw=4:
 /*!
@@ -218,8 +349,7 @@ function getAllTokens(str) {
  */
 
 (function (definition) {
-    // Turn off strict mode for this function so we can assign to global.Q
-    /* jshint strict: false */
+    "use strict";
 
     // This file will function properly as a <script> tag, or a module
     // using CommonJS and NodeJS or RequireJS module formats.  In
@@ -231,7 +361,7 @@ function getAllTokens(str) {
         bootstrap("promise", definition);
 
     // CommonJS
-    } else if (typeof exports === "object") {
+    } else if (typeof exports === "object" && typeof module === "object") {
         module.exports = definition();
 
     // RequireJS
@@ -247,8 +377,25 @@ function getAllTokens(str) {
         }
 
     // <script>
+    } else if (typeof window !== "undefined" || typeof self !== "undefined") {
+        // Prefer window over self for add-on scripts. Use self for
+        // non-windowed contexts.
+        var global = typeof window !== "undefined" ? window : self;
+
+        // Get the `window` object, save the previous Q global
+        // and initialize Q as a global.
+        var previousQ = global.Q;
+        global.Q = definition();
+
+        // Add a noConflict function so Q can be removed from the
+        // global namespace.
+        global.Q.noConflict = function () {
+            global.Q = previousQ;
+            return this;
+        };
+
     } else {
-        Q = definition();
+        throw new Error("This environment was not anticipated by Q. Please file a bug.");
     }
 
 })(function () {
@@ -280,57 +427,67 @@ var nextTick =(function () {
     var flushing = false;
     var requestTick = void 0;
     var isNodeJS = false;
+    // queue for late tasks, used by unhandled rejection tracking
+    var laterQueue = [];
 
     function flush() {
         /* jshint loopfunc: true */
+        var task, domain;
 
         while (head.next) {
             head = head.next;
-            var task = head.task;
+            task = head.task;
             head.task = void 0;
-            var domain = head.domain;
+            domain = head.domain;
 
             if (domain) {
                 head.domain = void 0;
                 domain.enter();
             }
+            runSingle(task, domain);
 
-            try {
-                task();
+        }
+        while (laterQueue.length) {
+            task = laterQueue.pop();
+            runSingle(task);
+        }
+        flushing = false;
+    }
+    // runs a single function in the async queue
+    function runSingle(task, domain) {
+        try {
+            task();
 
-            } catch (e) {
-                if (isNodeJS) {
-                    // In node, uncaught exceptions are considered fatal errors.
-                    // Re-throw them synchronously to interrupt flushing!
+        } catch (e) {
+            if (isNodeJS) {
+                // In node, uncaught exceptions are considered fatal errors.
+                // Re-throw them synchronously to interrupt flushing!
 
-                    // Ensure continuation if the uncaught exception is suppressed
-                    // listening "uncaughtException" events (as domains does).
-                    // Continue in next event to avoid tick recursion.
-                    if (domain) {
-                        domain.exit();
-                    }
-                    setTimeout(flush, 0);
-                    if (domain) {
-                        domain.enter();
-                    }
-
-                    throw e;
-
-                } else {
-                    // In browsers, uncaught exceptions are not fatal.
-                    // Re-throw them asynchronously to avoid slow-downs.
-                    setTimeout(function() {
-                       throw e;
-                    }, 0);
+                // Ensure continuation if the uncaught exception is suppressed
+                // listening "uncaughtException" events (as domains does).
+                // Continue in next event to avoid tick recursion.
+                if (domain) {
+                    domain.exit();
                 }
-            }
+                setTimeout(flush, 0);
+                if (domain) {
+                    domain.enter();
+                }
 
-            if (domain) {
-                domain.exit();
+                throw e;
+
+            } else {
+                // In browsers, uncaught exceptions are not fatal.
+                // Re-throw them asynchronously to avoid slow-downs.
+                setTimeout(function () {
+                    throw e;
+                }, 0);
             }
         }
 
-        flushing = false;
+        if (domain) {
+            domain.exit();
+        }
     }
 
     nextTick = function (task) {
@@ -346,9 +503,16 @@ var nextTick =(function () {
         }
     };
 
-    if (typeof process !== "undefined" && process.nextTick) {
-        // Node.js before 0.9. Note that some fake-Node environments, like the
-        // Mocha test runner, introduce a `process` global without a `nextTick`.
+    if (typeof process === "object" &&
+        process.toString() === "[object process]" && process.nextTick) {
+        // Ensure Q is in a real Node environment, with a `process.nextTick`.
+        // To see through fake Node environments:
+        // * Mocha test runner - exposes a `process` global without a `nextTick`
+        // * Browserify - exposes a `process.nexTick` function that uses
+        //   `setTimeout`. In this case `setImmediate` is preferred because
+        //    it is faster. Browserify's `process.toString()` yields
+        //   "[object Object]", while in a real Node environment
+        //   `process.nextTick()` yields "[object process]".
         isNodeJS = true;
 
         requestTick = function () {
@@ -392,7 +556,16 @@ var nextTick =(function () {
             setTimeout(flush, 0);
         };
     }
-
+    // runs a task after all other tasks have been run
+    // this is useful for unhandled rejection tracking that needs to happen
+    // after all `then`d tasks have been run.
+    nextTick.runAfter = function (task) {
+        laterQueue.push(task);
+        if (!flushing) {
+            flushing = true;
+            requestTick();
+        }
+    };
     return nextTick;
 })();
 
@@ -641,7 +814,7 @@ function Q(value) {
     // If the object is already a Promise, return it directly.  This enables
     // the resolve function to both be used to created references from objects,
     // but to tolerably coerce non-promises to promises.
-    if (isPromise(value)) {
+    if (value instanceof Promise) {
         return value;
     }
 
@@ -664,6 +837,11 @@ Q.nextTick = nextTick;
  * Controls whether or not long stack traces will be on
  */
 Q.longStackSupport = false;
+
+// enable long stacks if Q_DEBUG is set
+if (typeof process === "object" && process && process.env && process.env.Q_DEBUG) {
+    Q.longStackSupport = true;
+}
 
 /**
  * Constructs a {promise, resolve, reject} object.
@@ -696,7 +874,7 @@ function defer() {
                 progressListeners.push(operands[1]);
             }
         } else {
-            nextTick(function () {
+            Q.nextTick(function () {
                 resolvedPromise.promiseDispatch.apply(resolvedPromise, args);
             });
         }
@@ -744,7 +922,7 @@ function defer() {
         promise.source = newPromise;
 
         array_reduce(messages, function (undefined, message) {
-            nextTick(function () {
+            Q.nextTick(function () {
                 newPromise.promiseDispatch.apply(newPromise, message);
             });
         }, void 0);
@@ -782,7 +960,7 @@ function defer() {
         }
 
         array_reduce(progressListeners, function (undefined, progressListener) {
-            nextTick(function () {
+            Q.nextTick(function () {
                 progressListener(progress);
             });
         }, void 0);
@@ -875,15 +1053,15 @@ Promise.prototype.join = function (that) {
 };
 
 /**
- * Returns a promise for the first of an array of promises to become fulfilled.
+ * Returns a promise for the first of an array of promises to become settled.
  * @param answers {Array[Any*]} promises to race
- * @returns {Any*} the first promise to be fulfilled
+ * @returns {Any*} the first promise to be settled
  */
 Q.race = race;
 function race(answerPs) {
-    return promise(function(resolve, reject) {
+    return promise(function (resolve, reject) {
         // Switch to this once we can assume at least ES5
-        // answerPs.forEach(function(answerP) {
+        // answerPs.forEach(function (answerP) {
         //     Q(answerP).then(resolve, reject);
         // });
         // Use this in the meantime
@@ -997,7 +1175,7 @@ Promise.prototype.then = function (fulfilled, rejected, progressed) {
         return typeof progressed === "function" ? progressed(value) : value;
     }
 
-    nextTick(function () {
+    Q.nextTick(function () {
         self.promiseDispatch(function (value) {
             if (done) {
                 return;
@@ -1036,6 +1214,30 @@ Promise.prototype.then = function (fulfilled, rejected, progressed) {
     }]);
 
     return deferred.promise;
+};
+
+Q.tap = function (promise, callback) {
+    return Q(promise).tap(callback);
+};
+
+/**
+ * Works almost like "finally", but not called for rejections.
+ * Original resolution value is passed through callback unaffected.
+ * Callback may return a promise that will be awaited for.
+ * @param {Function} callback
+ * @returns {Q.Promise}
+ * @example
+ * doSomething()
+ *   .then(...)
+ *   .tap(console.log)
+ *   .then(...);
+ */
+Promise.prototype.tap = function (callback) {
+    callback = Q(callback);
+
+    return this.then(function (value) {
+        return callback.fcall(value).thenResolve(value);
+    });
 };
 
 /**
@@ -1103,9 +1305,7 @@ function nearer(value) {
  */
 Q.isPromise = isPromise;
 function isPromise(object) {
-    return isObject(object) &&
-        typeof object.promiseDispatch === "function" &&
-        typeof object.inspect === "function";
+    return object instanceof Promise;
 }
 
 Q.isPromiseAlike = isPromiseAlike;
@@ -1159,6 +1359,7 @@ Promise.prototype.isRejected = function () {
 // shimmed environments, this would naturally be a `Set`.
 var unhandledReasons = [];
 var unhandledRejections = [];
+var reportedUnhandledRejections = [];
 var trackUnhandledRejections = true;
 
 function resetUnhandledRejections() {
@@ -1173,6 +1374,14 @@ function resetUnhandledRejections() {
 function trackRejection(promise, reason) {
     if (!trackUnhandledRejections) {
         return;
+    }
+    if (typeof process === "object" && typeof process.emit === "function") {
+        Q.nextTick.runAfter(function () {
+            if (array_indexOf(unhandledRejections, promise) !== -1) {
+                process.emit("unhandledRejection", reason, promise);
+                reportedUnhandledRejections.push(promise);
+            }
+        });
     }
 
     unhandledRejections.push(promise);
@@ -1190,6 +1399,15 @@ function untrackRejection(promise) {
 
     var at = array_indexOf(unhandledRejections, promise);
     if (at !== -1) {
+        if (typeof process === "object" && typeof process.emit === "function") {
+            Q.nextTick.runAfter(function () {
+                var atReport = array_indexOf(reportedUnhandledRejections, promise);
+                if (atReport !== -1) {
+                    process.emit("rejectionHandled", unhandledReasons[at], promise);
+                    reportedUnhandledRejections.splice(atReport, 1);
+                }
+            });
+        }
         unhandledRejections.splice(at, 1);
         unhandledReasons.splice(at, 1);
     }
@@ -1283,7 +1501,7 @@ function fulfill(value) {
  */
 function coerce(promise) {
     var deferred = defer();
-    nextTick(function () {
+    Q.nextTick(function () {
         try {
             promise.then(deferred.resolve, deferred.reject, deferred.notify);
         } catch (exception) {
@@ -1384,7 +1602,7 @@ function async(makeGenerator) {
                     return reject(exception);
                 }
                 if (result.done) {
-                    return result.value;
+                    return Q(result.value);
                 } else {
                     return when(result.value, callback, errback);
                 }
@@ -1395,7 +1613,7 @@ function async(makeGenerator) {
                     result = generator[verb](arg);
                 } catch (exception) {
                     if (isStopIteration(exception)) {
-                        return exception.value;
+                        return Q(exception.value);
                     } else {
                         return reject(exception);
                     }
@@ -1491,7 +1709,7 @@ function dispatch(object, op, args) {
 Promise.prototype.dispatch = function (op, args) {
     var self = this;
     var deferred = defer();
-    nextTick(function () {
+    Q.nextTick(function () {
         self.promiseDispatch(deferred.resolve, op, args);
     });
     return deferred.promise;
@@ -1664,7 +1882,7 @@ Promise.prototype.keys = function () {
 Q.all = all;
 function all(promises) {
     return when(promises, function (promises) {
-        var countDown = 0;
+        var pendingCount = 0;
         var deferred = defer();
         array_reduce(promises, function (undefined, promise, index) {
             var snapshot;
@@ -1674,12 +1892,12 @@ function all(promises) {
             ) {
                 promises[index] = snapshot.value;
             } else {
-                ++countDown;
+                ++pendingCount;
                 when(
                     promise,
                     function (value) {
                         promises[index] = value;
-                        if (--countDown === 0) {
+                        if (--pendingCount === 0) {
                             deferred.resolve(promises);
                         }
                     },
@@ -1690,7 +1908,7 @@ function all(promises) {
                 );
             }
         }, void 0);
-        if (countDown === 0) {
+        if (pendingCount === 0) {
             deferred.resolve(promises);
         }
         return deferred.promise;
@@ -1699,6 +1917,55 @@ function all(promises) {
 
 Promise.prototype.all = function () {
     return all(this);
+};
+
+/**
+ * Returns the first resolved promise of an array. Prior rejected promises are
+ * ignored.  Rejects only if all promises are rejected.
+ * @param {Array*} an array containing values or promises for values
+ * @returns a promise fulfilled with the value of the first resolved promise,
+ * or a rejected promise if all promises are rejected.
+ */
+Q.any = any;
+
+function any(promises) {
+    if (promises.length === 0) {
+        return Q.resolve();
+    }
+
+    var deferred = Q.defer();
+    var pendingCount = 0;
+    array_reduce(promises, function (prev, current, index) {
+        var promise = promises[index];
+
+        pendingCount++;
+
+        when(promise, onFulfilled, onRejected, onProgress);
+        function onFulfilled(result) {
+            deferred.resolve(result);
+        }
+        function onRejected() {
+            pendingCount--;
+            if (pendingCount === 0) {
+                deferred.reject(new Error(
+                    "Can't get fulfillment value from any promise, all " +
+                    "promises were rejected."
+                ));
+            }
+        }
+        function onProgress(progress) {
+            deferred.notify({
+                index: index,
+                value: progress
+            });
+        }
+    }, undefined);
+
+    return deferred.promise;
+}
+
+Promise.prototype.any = function () {
+    return any(this);
 };
 
 /**
@@ -1834,7 +2101,7 @@ Promise.prototype.done = function (fulfilled, rejected, progress) {
     var onUnhandledError = function (error) {
         // forward to a future turn so that ``when``
         // does not catch it and turn it into a rejection.
-        nextTick(function () {
+        Q.nextTick(function () {
             makeStackTraceLong(error, promise);
             if (Q.onerror) {
                 Q.onerror(error);
@@ -1861,18 +2128,22 @@ Promise.prototype.done = function (fulfilled, rejected, progress) {
  * some milliseconds time out.
  * @param {Any*} promise
  * @param {Number} milliseconds timeout
- * @param {String} custom error message (optional)
+ * @param {Any*} custom error message or Error object (optional)
  * @returns a promise for the resolution of the given promise if it is
  * fulfilled before the timeout, otherwise rejected.
  */
-Q.timeout = function (object, ms, message) {
-    return Q(object).timeout(ms, message);
+Q.timeout = function (object, ms, error) {
+    return Q(object).timeout(ms, error);
 };
 
-Promise.prototype.timeout = function (ms, message) {
+Promise.prototype.timeout = function (ms, error) {
     var deferred = defer();
     var timeoutId = setTimeout(function () {
-        deferred.reject(new Error(message || "Timed out after " + ms + " ms"));
+        if (!error || "string" === typeof error) {
+            error = new Error(error || "Timed out after " + ms + " ms");
+            error.code = "ETIMEDOUT";
+        }
+        deferred.reject(error);
     }, ms);
 
     this.then(function (value) {
@@ -2074,17 +2345,21 @@ function nodeify(object, nodeback) {
 Promise.prototype.nodeify = function (nodeback) {
     if (nodeback) {
         this.then(function (value) {
-            nextTick(function () {
+            Q.nextTick(function () {
                 nodeback(null, value);
             });
         }, function (error) {
-            nextTick(function () {
+            Q.nextTick(function () {
                 nodeback(error);
             });
         });
     } else {
         return this;
     }
+};
+
+Q.noConflict = function() {
+    throw new Error("Q.noConflict only works when Q is used as a global");
 };
 
 // All code before this point will be filtered from stack traces.
@@ -2095,8 +2370,8 @@ return Q;
 });
 
 }).call(this,require('_process'))
-},{"_process":12}],3:[function(require,module,exports){
-// Copyright 2014 Ryan Marcus
+},{"_process":13}],4:[function(require,module,exports){
+// Copyright 2016, 2015, 2014 Ryan Marcus
 // This file is part of dirty-json.
 // 
 // dirty-json is free software: you can redistribute it and/or modify
@@ -2111,7 +2386,6 @@ return Q;
 // 
 // You should have received a copy of the GNU Affero General Public License
 // along with dirty-json.  If not, see <http://www.gnu.org/licenses/>.
-
 
 var fs = require('fs');
 var Stream = require('stream');
@@ -2393,6 +2667,25 @@ function reduce(stack) {
 			stack.push(next);
 			return true;
 		}
+		
+		if (is(stack.peek(), LEX_KEY) && (stack.last(1), LEX_COMMA)) {
+			log("Error rule 7");
+			var l = stack.pop();
+			//stack.pop();
+			stack.push({type: LEX_VALUE, 'value': l.value});
+			log("Start subreduce... (" + l.value + ")");
+			while(reduce(stack));
+			log("End subreduce");
+			stack.push(next);
+
+			return true;
+		}
+
+		if (is(stack.peek(), LEX_VLIST)) {
+			log("Error rule 8");
+			stack.peek().value.push(next.value[0]);
+			return true;
+		}
 		break;
 
 	case LEX_COVALUE:
@@ -2481,6 +2774,19 @@ function reduce(stack) {
 			stack.push({type: LEX_LIST, 'value': [val]});
 			return true;
 		}
+
+		if (is(stack.peek(), LEX_KEY) && (stack.last(1), LEX_COMMA)) {
+			log("Error rule 5");
+			var l = stack.pop();
+			//stack.pop();
+			stack.push({type: LEX_VALUE, 'value': l.value});
+			log("Start subreduce... (" + l.value + ")");
+			while(reduce(stack));
+			log("End subreduce");
+			stack.push({type: LEX_RB});
+			return true;
+		}
+
 		break;	
 
 	case LEX_RCB:
@@ -2592,6 +2898,19 @@ value = COLON key (re-reduce)
 -- for the case of {"this": that, "another": "maybe"}
 When last is KVList,
 value = COLON key (re-reduce)
+
+-- for the case of ["this", that]
+when last is a RB,
+value = COMMA key (re-reduce)
+
+-- for the case of ["this", that, "another"]
+When last is a VList,
+value = COMMA key (re-reduce)
+
+AND
+
+VList = VList VList
+
 */
 
 
@@ -2636,9 +2955,13 @@ function compileOST(tree) {
 }
 
 
-},{"./lexer":1,"fs":4,"q":2,"stream":24}],4:[function(require,module,exports){
+/*parse('[4]').then(function (res) {
+	console.log(res);
+});*/
 
-},{}],5:[function(require,module,exports){
+},{"./lexer":1,"fs":5,"q":3,"stream":25}],5:[function(require,module,exports){
+
+},{}],6:[function(require,module,exports){
 /*!
  * The buffer module from node.js, for the browser.
  *
@@ -3690,7 +4013,7 @@ function decodeUtf8Char (str) {
   }
 }
 
-},{"base64-js":6,"ieee754":7,"is-array":8}],6:[function(require,module,exports){
+},{"base64-js":7,"ieee754":8,"is-array":9}],7:[function(require,module,exports){
 var lookup = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
 
 ;(function (exports) {
@@ -3812,7 +4135,7 @@ var lookup = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
 	exports.fromByteArray = uint8ToBase64
 }(typeof exports === 'undefined' ? (this.base64js = {}) : exports))
 
-},{}],7:[function(require,module,exports){
+},{}],8:[function(require,module,exports){
 exports.read = function(buffer, offset, isLE, mLen, nBytes) {
   var e, m,
       eLen = nBytes * 8 - mLen - 1,
@@ -3898,7 +4221,7 @@ exports.write = function(buffer, value, offset, isLE, mLen, nBytes) {
   buffer[offset + i - d] |= s * 128;
 };
 
-},{}],8:[function(require,module,exports){
+},{}],9:[function(require,module,exports){
 
 /**
  * isArray
@@ -3933,7 +4256,7 @@ module.exports = isArray || function (val) {
   return !! val && '[object Array]' == str.call(val);
 };
 
-},{}],9:[function(require,module,exports){
+},{}],10:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -4236,7 +4559,7 @@ function isUndefined(arg) {
   return arg === void 0;
 }
 
-},{}],10:[function(require,module,exports){
+},{}],11:[function(require,module,exports){
 if (typeof Object.create === 'function') {
   // implementation from standard node.js 'util' module
   module.exports = function inherits(ctor, superCtor) {
@@ -4261,12 +4584,12 @@ if (typeof Object.create === 'function') {
   }
 }
 
-},{}],11:[function(require,module,exports){
+},{}],12:[function(require,module,exports){
 module.exports = Array.isArray || function (arr) {
   return Object.prototype.toString.call(arr) == '[object Array]';
 };
 
-},{}],12:[function(require,module,exports){
+},{}],13:[function(require,module,exports){
 // shim for using process in browser
 
 var process = module.exports = {};
@@ -4354,10 +4677,10 @@ process.chdir = function (dir) {
     throw new Error('process.chdir is not supported');
 };
 
-},{}],13:[function(require,module,exports){
+},{}],14:[function(require,module,exports){
 module.exports = require("./lib/_stream_duplex.js")
 
-},{"./lib/_stream_duplex.js":14}],14:[function(require,module,exports){
+},{"./lib/_stream_duplex.js":15}],15:[function(require,module,exports){
 (function (process){
 // Copyright Joyent, Inc. and other Node contributors.
 //
@@ -4450,7 +4773,7 @@ function forEach (xs, f) {
 }
 
 }).call(this,require('_process'))
-},{"./_stream_readable":16,"./_stream_writable":18,"_process":12,"core-util-is":19,"inherits":10}],15:[function(require,module,exports){
+},{"./_stream_readable":17,"./_stream_writable":19,"_process":13,"core-util-is":20,"inherits":11}],16:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -4498,7 +4821,7 @@ PassThrough.prototype._transform = function(chunk, encoding, cb) {
   cb(null, chunk);
 };
 
-},{"./_stream_transform":17,"core-util-is":19,"inherits":10}],16:[function(require,module,exports){
+},{"./_stream_transform":18,"core-util-is":20,"inherits":11}],17:[function(require,module,exports){
 (function (process){
 // Copyright Joyent, Inc. and other Node contributors.
 //
@@ -5484,7 +5807,7 @@ function indexOf (xs, x) {
 }
 
 }).call(this,require('_process'))
-},{"_process":12,"buffer":5,"core-util-is":19,"events":9,"inherits":10,"isarray":11,"stream":24,"string_decoder/":25}],17:[function(require,module,exports){
+},{"_process":13,"buffer":6,"core-util-is":20,"events":10,"inherits":11,"isarray":12,"stream":25,"string_decoder/":26}],18:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -5696,7 +6019,7 @@ function done(stream, er) {
   return stream.push(null);
 }
 
-},{"./_stream_duplex":14,"core-util-is":19,"inherits":10}],18:[function(require,module,exports){
+},{"./_stream_duplex":15,"core-util-is":20,"inherits":11}],19:[function(require,module,exports){
 (function (process){
 // Copyright Joyent, Inc. and other Node contributors.
 //
@@ -6086,7 +6409,7 @@ function endWritable(stream, state, cb) {
 }
 
 }).call(this,require('_process'))
-},{"./_stream_duplex":14,"_process":12,"buffer":5,"core-util-is":19,"inherits":10,"stream":24}],19:[function(require,module,exports){
+},{"./_stream_duplex":15,"_process":13,"buffer":6,"core-util-is":20,"inherits":11,"stream":25}],20:[function(require,module,exports){
 (function (Buffer){
 // Copyright Joyent, Inc. and other Node contributors.
 //
@@ -6196,10 +6519,10 @@ function objectToString(o) {
   return Object.prototype.toString.call(o);
 }
 }).call(this,require("buffer").Buffer)
-},{"buffer":5}],20:[function(require,module,exports){
+},{"buffer":6}],21:[function(require,module,exports){
 module.exports = require("./lib/_stream_passthrough.js")
 
-},{"./lib/_stream_passthrough.js":15}],21:[function(require,module,exports){
+},{"./lib/_stream_passthrough.js":16}],22:[function(require,module,exports){
 exports = module.exports = require('./lib/_stream_readable.js');
 exports.Readable = exports;
 exports.Writable = require('./lib/_stream_writable.js');
@@ -6207,13 +6530,13 @@ exports.Duplex = require('./lib/_stream_duplex.js');
 exports.Transform = require('./lib/_stream_transform.js');
 exports.PassThrough = require('./lib/_stream_passthrough.js');
 
-},{"./lib/_stream_duplex.js":14,"./lib/_stream_passthrough.js":15,"./lib/_stream_readable.js":16,"./lib/_stream_transform.js":17,"./lib/_stream_writable.js":18}],22:[function(require,module,exports){
+},{"./lib/_stream_duplex.js":15,"./lib/_stream_passthrough.js":16,"./lib/_stream_readable.js":17,"./lib/_stream_transform.js":18,"./lib/_stream_writable.js":19}],23:[function(require,module,exports){
 module.exports = require("./lib/_stream_transform.js")
 
-},{"./lib/_stream_transform.js":17}],23:[function(require,module,exports){
+},{"./lib/_stream_transform.js":18}],24:[function(require,module,exports){
 module.exports = require("./lib/_stream_writable.js")
 
-},{"./lib/_stream_writable.js":18}],24:[function(require,module,exports){
+},{"./lib/_stream_writable.js":19}],25:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -6342,7 +6665,7 @@ Stream.prototype.pipe = function(dest, options) {
   return dest;
 };
 
-},{"events":9,"inherits":10,"readable-stream/duplex.js":13,"readable-stream/passthrough.js":20,"readable-stream/readable.js":21,"readable-stream/transform.js":22,"readable-stream/writable.js":23}],25:[function(require,module,exports){
+},{"events":10,"inherits":11,"readable-stream/duplex.js":14,"readable-stream/passthrough.js":21,"readable-stream/readable.js":22,"readable-stream/transform.js":23,"readable-stream/writable.js":24}],26:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -6565,4 +6888,4 @@ function base64DetectIncompleteChar(buffer) {
   this.charLength = this.charReceived ? 3 : 0;
 }
 
-},{"buffer":5}]},{},["./dirty-json"]);
+},{"buffer":6}]},{},["./dirty-json"]);
