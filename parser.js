@@ -1,4 +1,4 @@
-// Copyright 2015, 2014 Ryan Marcus
+// Copyright 2016, 2015, 2014 Ryan Marcus
 // This file is part of dirty-json.
 // 
 // dirty-json is free software: you can redistribute it and/or modify

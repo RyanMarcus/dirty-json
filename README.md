@@ -70,6 +70,7 @@ Since `dirty-json` is handling malformed JSON, it will not always produce the re
 Currently `dirty-json` uses a hand-written lexer and `LR(1)` parser. It shouldn't be used in any environment that requires reliable or fast results.
 
 ## License
+> Copyright 2016, 2015, 2014 Ryan Marcus
 > dirty-json is free software: you can redistribute it and/or modify
 > it under the terms of the GNU Affero General Public License as published by
 > the Free Software Foundation, either version 3 of the License, or
