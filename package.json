@@ -20,8 +20,8 @@
 	"q": "^1.0.1"
     },
     "devDependencies": {
-	"mocha": "1.21.4",
-	"istanbul": "0.3.2"
+	"mocha": "2.3.4",
+	"istanbul": "0.4.1"
     },
     "repository": {
 	"type": "git",
