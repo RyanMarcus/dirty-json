@@ -17,7 +17,7 @@
     "license": "AGPL-3.0",
     "dependencies": {
 	"lex": "^1.7.9",
-	"q": "^1.0.1"
+	"q": "^1.4.1"
     },
     "devDependencies": {
 	"mocha": "2.3.4",
