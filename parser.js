@@ -316,28 +316,13 @@ function reduce(stack) {
 		break;
 
 	case LEX_COVALUE:
-		if (is(stack.peek(), LEX_KEY)) {
+		if (is(stack.peek(), LEX_KEY) || is(stack.peek(), LEX_VALUE) || is(stack.peek(), LEX_VLIST)) {
 			log("Rule 16");
 			var key = stack.pop();
 			stack.push({'type': LEX_KV, 'key': key.value, 'value': next.value});
 			return true;
 		}
 		
-		if (is(stack.peek(), LEX_VALUE)) {
-			log("Rule 16a");
-			var key = stack.pop();
-			stack.push({'type': LEX_KV, 'key': key.value, 'value': next.value});
-			return true;
-		}
-		
-		if (is(stack.peek(), LEX_VLIST)) {
-			log("Rule 16b");
-			var key = stack.pop();
-			key.value.forEach(function (i) {
-				stack.push({'type': LEX_KV, 'key': i, 'value': next.value});
-			});
-			return true;
-		}
 		break;
 
 	case LEX_KV:
@@ -365,17 +350,7 @@ function reduce(stack) {
 			return true;
 		}
 
-		if (is(stack.peek(), LEX_KEY) && (stack.last(1), LEX_COLON)) {
-			log("Error rule 5");
-			var l = stack.pop();
-			//stack.pop();
-			stack.push({type: LEX_VALUE, 'value': l.value});
-			log("Start subreduce... (" + l.value + ")");
-			while(reduce(stack));
-			log("End subreduce");
-			stack.push(next);
-			return true;
-		}
+	
 		break;
 		
 	case LEX_RB:
@@ -522,9 +497,8 @@ KVList = KVList key value
 When last in RCB, 
 value = COLON key (re-reduce)
 
--- for the case of {"this": that, "another": "maybe"}
-When last is KVList,
-value = COLON key (re-reduce)
+-- REMOVED
+
 
 -- for the case of ["this", that]
 when last is a RB,
