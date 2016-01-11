@@ -322,6 +322,8 @@ function reduce(stack) {
 			stack.push({'type': LEX_KV, 'key': key.value, 'value': next.value});
 			return true;
 		}
+
+		console.log("Stack is: " + JSON.stringify(stack));
 		
 		break;
 
@@ -332,7 +334,8 @@ function reduce(stack) {
 			stack.pop();
 			return true;
 		}	
-		
+
+
 
 
 		log("Rule 18");
@@ -556,6 +559,6 @@ function compileOST(tree) {
 }
 
 
-/*parse('[4]').then(function (res) {
+/*parse('[5,:"test"]').then(function (res) {
 	console.log(res);
 });*/
