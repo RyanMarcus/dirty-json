@@ -75,22 +75,27 @@ function parse(text) {
 		tokens.push(t);
 	};
 
-	lexer.lexString(text, emit);
-
-
-	for (var i = 0; i < tokens.length; i++) {
-		log("Shifting " + tokens[i].type);
-		stack.push(tokens[i]);
-		log(stack);
-		log("Reducing...");
-		while (reduce(stack)) {
+	try {
+		lexer.lexString(text, emit);
+		
+		
+		for (var i = 0; i < tokens.length; i++) {
+			log("Shifting " + tokens[i].type);
+			stack.push(tokens[i]);
 			log(stack);
 			log("Reducing...");
+			while (reduce(stack)) {
+				log(stack);
+				log("Reducing...");
+			}
+			
 		}
-
+		
+		toR.resolve(compileOST(stack[0]));
+	} catch (e) {
+		toR.reject(e);
 	}
-
-	toR.resolve(compileOST(stack[0]));
+	
 	return toR.promise;
 }
 
@@ -316,6 +321,7 @@ function reduce(stack) {
 		break;
 
 	case LEX_COVALUE:
+
 		if (is(stack.peek(), LEX_KEY) || is(stack.peek(), LEX_VALUE) || is(stack.peek(), LEX_VLIST)) {
 			log("Rule 16");
 			var key = stack.pop();
@@ -323,10 +329,9 @@ function reduce(stack) {
 			return true;
 		}
 
-		console.log("Stack is: " + JSON.stringify(stack));
-		
-		break;
 
+		throw new Error("Got a :value that can't be handled");
+		
 	case LEX_KV:
 		if (is(stack.last(0), LEX_COMMA) && is(stack.last(1), LEX_KVLIST)) {
 			log("Rule 17");
@@ -421,7 +426,8 @@ function reduce(stack) {
 			stack.push({type: LEX_RCB});
 			return true;
 		}
-		break;
+
+		throw new Error("Found } that I can't handle.");
 	}
 
 
@@ -546,19 +552,17 @@ function compileOST(tree) {
 		return toR;
 	}
 
-	/* istanbul ignore else  */
 	if (is(tree, LEX_LIST)) {
 		return compileOST(tree.value);
 	}
 
-	/* istanbul ignore next */
-	console.error("Uncaught type in compile: " + JSON.stringify(tree));
+	throw new Error("Uncaught type in compile: " + JSON.stringify(tree));
 
-	/* istanbul ignore next */
-	return null;
 }
 
 
-/*parse('[5,:"test"]').then(function (res) {
+/*parse('"test"').then(function (res) {
 	console.log(res);
+}).catch(e => {
+	console.log(e);
 });*/

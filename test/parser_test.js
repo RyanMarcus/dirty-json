@@ -279,4 +279,32 @@ describe("parser", function () {
 
 		
 	});
+
+	describe("should throw exceptions for JSON that is too malformed to deal with", () => {
+		it('should throw on }}', done => {
+			dJSON.parse('}}').then(r => {
+				done(new Error("Should have thrown exception"));
+			}).catch(e => {
+				done();
+			});
+			
+		});
+
+		it('should throw on ]:"test"', done => {
+			dJSON.parse(']:"test"').then(r => {
+				done(new Error("Should have thrown exception"));
+			}).catch(e => {
+				done();
+			});
+		});
+
+		it('should throw on "test"', done => {
+			dJSON.parse('"test"').then(r => {
+				done(new Error("Should have thrown exception"));
+			}).catch(e => {
+				done();
+			});
+		});
+		 
+	});
 });
