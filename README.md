@@ -1,12 +1,12 @@
 # dirty-json
 
-[ ![Codeship Status for RyanMarcus/dirty-json](https://www.codeship.io/projects/cbc19870-2e42-0132-d30c-4adef3b19db7/status)](https://www.codeship.io/projects/39346)
+[ ![Codeship Status for RyanMarcus/dirty-json](https://www.codeship.io/projects/cbc19870-2e42-0132-d30c-4adef3b19db7/status)](https://www.codeship.io/projects/39346) ![Dependency monitor](https://david-dm.org/ryanmarcus/dirty-json.png) ![License](https://img.shields.io/npm/l/dirty-json.svg)
 
 [![NPM](https://nodei.co/npm/dirty-json.png?compact=true)](https://nodei.co/npm/dirty-json/)
 
-![Dependency monitor](https://david-dm.org/ryanmarcus/dirty-json.png)
 
-![License](https://img.shields.io/npm/l/dirty-json.svg)
+
+
 
 
 A JSON parser that tries to handle non-conforming or otherwise invalid JSON.
