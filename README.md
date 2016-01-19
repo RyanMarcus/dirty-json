@@ -1,6 +1,6 @@
 # dirty-json
 
-[ ![Codeship Status for RyanMarcus/dirty-json](https://www.codeship.io/projects/cbc19870-2e42-0132-d30c-4adef3b19db7/status)](https://www.codeship.io/projects/39346) ![Dependency monitor](https://img.shields.io/david/ryanmarcus/dirty-json.svg) ![License](https://img.shields.io/npm/l/dirty-json.svg) [![Coverage Status](https://coveralls.io/repos/github/RyanMarcus/dirty-json/badge.svg?branch=master)](https://coveralls.io/github/RyanMarcus/dirty-json?branch=master)
+[ ![Codeship Status for RyanMarcus/dirty-json](https://www.codeship.io/projects/cbc19870-2e42-0132-d30c-4adef3b19db7/status)](https://www.codeship.io/projects/39346) ![Dependency monitor](https://david-dm.org/ryanmarcus/dirty-json.png) ![License](https://img.shields.io/npm/l/dirty-json.svg) [![Coverage Status](https://coveralls.io/repos/github/RyanMarcus/dirty-json/badge.svg?branch=master)](https://coveralls.io/github/RyanMarcus/dirty-json?branch=master)
 
 
 [![NPM](https://nodei.co/npm/dirty-json.png?compact=true)](https://nodei.co/npm/dirty-json/)
