@@ -6,7 +6,9 @@
 [ ![AGPL](http://www.gnu.org/graphics/agplv3-155x51.png) ](http://www.gnu.org/licenses/agpl-3.0.en.html)
 
 
-
+```
+npm install dirty-json
+```
 
 
 
