@@ -98,7 +98,7 @@ describe("lexer", function () {
 			lexer.getAllTokens('.5').then(function(res) {
 				assert.equal(res.length, 1);
 				assert.equal(res[0].type, LEX_FLOAT);
-				assert.equal(res[0].value, .5);
+				assert.equal(res[0].value, 0.5);
 			}).then(done, done);
 		});
 
@@ -106,7 +106,7 @@ describe("lexer", function () {
 			lexer.getAllTokens('-.5').then(function(res) {
 				assert.equal(res.length, 1);
 				assert.equal(res[0].type, LEX_FLOAT);
-				assert.equal(res[0].value, -.5);
+				assert.equal(res[0].value, -0.5);
 			}).then(done, done);
 		});
 

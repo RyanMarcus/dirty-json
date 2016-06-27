@@ -196,7 +196,7 @@ function reduce(stack) {
 
 		if (is(stack.peek(), LEX_KEY) && is(stack.last(1), LEX_VALUE)) {
 			log("Error rule 1");
-			var middleVal = stack.pop();
+			let middleVal = stack.pop();
 			stack.peek().value += '"' + middleVal.value + '"';
 			stack.peek().value += next.value;
 			return true;
@@ -204,8 +204,8 @@ function reduce(stack) {
 
 		if (is(stack.peek(), LEX_KEY) && is(stack.last(1), LEX_VLIST)) {
 			log("Error rule 2");
-			var middleVal = stack.pop();
-			var oldLastVal = stack.peek().value.pop();
+			let middleVal = stack.pop();
+			let oldLastVal = stack.peek().value.pop();
 			oldLastVal +=  '"' + middleVal.value + '"';
 			oldLastVal += next.value;
 			
@@ -216,8 +216,8 @@ function reduce(stack) {
 		
 		if (is(stack.peek(), LEX_KEY) && is(stack.last(1), LEX_KVLIST)) {
 			log("Error rule 3");
-			var middleVal = stack.pop();
-			var oldLastVal = stack.peek().value.pop();
+			let middleVal = stack.pop();
+			let oldLastVal = stack.peek().value.pop();
 			oldLastVal.value +=  '"' + middleVal.value + '"';
 			oldLastVal.value += next.value;
 			
@@ -248,7 +248,7 @@ function reduce(stack) {
 	case LEX_OBJ:
 		if (is(stack.peek(), LEX_COMMA)) {
 			log("Rule 12b");
-			var toPush = {'type': LEX_CVALUE, 'value': next};
+			let toPush = {'type': LEX_CVALUE, 'value': next};
 			stack.pop();
 			stack.push(toPush);
 			return true;
@@ -256,7 +256,7 @@ function reduce(stack) {
 
 		if (is(stack.peek(), LEX_COLON)) {
 			log("Rule 13b");
-			var toPush = {'type': LEX_COVALUE, 'value': next};
+			let toPush = {'type': LEX_COVALUE, 'value': next};
 			stack.pop();
 			stack.push(toPush);
 			return true;
@@ -364,7 +364,7 @@ function reduce(stack) {
 	case LEX_RB:
 		if (is(stack.peek(), LEX_VLIST) && is(stack.last(1), LEX_LB)) {
 			log("Rule 19");
-			var l = stack.pop();
+			let l = stack.pop();
 			stack.pop();
 			stack.push({'type': LEX_LIST, 'value': l.value});
 			return true;
@@ -387,7 +387,7 @@ function reduce(stack) {
 
 		if (is(stack.peek(), LEX_KEY) && (stack.last(1), LEX_COMMA)) {
 			log("Error rule 5");
-			var l = stack.pop();
+			let l = stack.pop();
 			//stack.pop();
 			stack.push({type: LEX_VALUE, 'value': l.value});
 			log("Start subreduce... (" + l.value + ")");
@@ -402,7 +402,7 @@ function reduce(stack) {
 	case LEX_RCB:
 		if (is(stack.peek(), LEX_KVLIST) && (stack.last(1), LEX_LCB)) {
 			log("Rule 20");
-			var l = stack.pop();
+			let l = stack.pop();
 			stack.pop();
 			stack.push({'type': LEX_OBJ, 'value': l.value});
 			return true;
@@ -417,7 +417,7 @@ function reduce(stack) {
 
 		if (is(stack.peek(), LEX_KEY) && (stack.last(1), LEX_COLON)) {
 			log("Error rule 4");
-			var l = stack.pop();
+			let l = stack.pop();
 			//stack.pop();
 			stack.push({type: LEX_VALUE, 'value': l.value});
 			log("Start subreduce... (" + l.value + ")");
@@ -531,20 +531,20 @@ function compileOST(tree) {
 	if (rawTypes.indexOf((typeof tree)) != -1)
 		return tree;
 
-	if (tree == null)
+	if (tree === null)
 		return null;
 
 	if (Array.isArray(tree)) {
-		var toR = [];
-		while (tree.length != 0)
+		let toR = [];
+		while (tree.length > 0)
 			toR.unshift(compileOST(tree.pop()));
 		return toR;
 	}
 	
 
 	if (is(tree, LEX_OBJ)) {
-		var toR = {};
-		if (tree.value == null)
+		let toR = {};
+		if (tree.value === null)
 			return {};
 		tree.value.forEach(function (i) {
 			toR[i.key] = compileOST(i.value);

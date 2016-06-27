@@ -28,5 +28,10 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/RyanMarcus/dirty-json.git"
-  }
+  },
+    "jshintConfig": {
+        "esversion": 6,
+        "node": true
+        
+    }
 }

@@ -14,6 +14,8 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with dirty-json.  If not, see <http://www.gnu.org/licenses/>.
 
+"use strict";
+
 var assert = require("assert");
 var dJSON = require("../dirty-json");
 
