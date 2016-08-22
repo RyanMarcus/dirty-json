@@ -1,3 +1,6 @@
+var dJSON = require('./dirty-json');
+
+
 angular.module('djson', []).controller('DemoCtrl', ['$scope', function($scope) {
 	$scope.valid = false;
 	
@@ -21,7 +24,6 @@ angular.module('djson', []).controller('DemoCtrl', ['$scope', function($scope) {
 	$scope.input = $scope.selectedExample.content;
 
 	$scope.doParse = function() {
-		var dJSON = require('./dirty-json');
 		dJSON.parse($scope.input).then(function (res) {
 			$scope.output = JSON.stringify(res, null, 4);
 			try {

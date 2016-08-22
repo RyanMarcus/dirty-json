@@ -1,4 +1,4 @@
-// Copyright 2014 Ryan Marcus
+// Copyright 2016, 2015, 2014 Ryan Marcus
 // This file is part of dirty-json.
 // 
 // dirty-json is free software: you can redistribute it and/or modify
@@ -13,6 +13,8 @@
 // 
 // You should have received a copy of the GNU Affero General Public License
 // along with dirty-json.  If not, see <http://www.gnu.org/licenses/>.
+
+"use strict";
 
 var assert = require("assert");
 var lexer = require("../lexer");
@@ -96,7 +98,7 @@ describe("lexer", function () {
 			lexer.getAllTokens('.5').then(function(res) {
 				assert.equal(res.length, 1);
 				assert.equal(res[0].type, LEX_FLOAT);
-				assert.equal(res[0].value, .5);
+				assert.equal(res[0].value, 0.5);
 			}).then(done, done);
 		});
 
@@ -104,7 +106,7 @@ describe("lexer", function () {
 			lexer.getAllTokens('-.5').then(function(res) {
 				assert.equal(res.length, 1);
 				assert.equal(res[0].type, LEX_FLOAT);
-				assert.equal(res[0].value, -.5);
+				assert.equal(res[0].value, -0.5);
 			}).then(done, done);
 		});
 
@@ -225,6 +227,38 @@ describe("lexer", function () {
 			}).then(done, done);
 		});
 
+		it('should parse integers as integers', function (done) {
+			lexer.getAllTokens('[4]').then(res => {
+				assert.equal(res.length, 3);
+				assert.equal(res[0].type, LEX_LB);
+				assert.equal(res[1].type, LEX_INT);
+				assert.equal(res[1].value, 4);
+				assert.equal(res[2].type, LEX_RB);
+			}).then(done, done);
+		});
+
+		it('should parse floats as floats', function (done) {
+			lexer.getAllTokens('[4.0]').then(res => {
+				assert.equal(res.length, 3);
+				assert.equal(res[0].type, LEX_LB);
+				assert.equal(res[1].type, LEX_FLOAT);
+				assert.equal(res[1].value, 4.0);
+				assert.equal(res[2].type, LEX_RB);
+			}).then(done, done);
+		});
+
+		it('should handle newlines in quotes', done => {
+			lexer.getAllTokens('{ "test0": "a '+"\n"+'string" }').then( res => {
+				assert.equal(res.length, 5);
+				assert.equal(res[0].type, LEX_LCB);
+				assert.equal(res[1].type, LEX_QUOTE);
+				assert.equal(res[1].value, "test0");
+				assert.equal(res[2].type, LEX_COLON);
+				assert.equal(res[3].type, LEX_QUOTE);
+				assert.equal(res[3].value, "a \nstring");
+				assert.equal(res[4].type, LEX_RCB);
+			}).then(done, done);
+		});
 	});
 });
 
