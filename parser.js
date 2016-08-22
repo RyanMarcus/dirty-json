@@ -16,10 +16,10 @@
 
 "use strict";
 
-var fs = require('fs');
-var Stream = require('stream');
-var lexer = require("./lexer");
-var Q = require('q');
+let fs = require('fs');
+let Stream = require('stream');
+let lexer = require("./lexer");
+let Q = require('q');
 
 // terminals
 const LEX_KV = 0;
@@ -68,12 +68,12 @@ function log(str) {
 
 module.exports.parse = parse;
 function parse(text) {
-    var toR = Q.defer();
+    let toR = Q.defer();
 
-    var stack = [];
+    let stack = [];
 
-    var tokens = [];
-    var emit = function(t) {
+    let tokens = [];
+    let emit = function(t) {
 	tokens.push(t);
     };
 
@@ -81,7 +81,7 @@ function parse(text) {
 	lexer.lexString(text, emit);
 	
 	
-	for (var i = 0; i < tokens.length; i++) {
+	for (let i = 0; i < tokens.length; i++) {
 	    log("Shifting " + tokens[i].type);
 	    stack.push(tokens[i]);
 	    log(stack);
@@ -102,7 +102,7 @@ function parse(text) {
 }
 
 function reduce(stack) {
-    var next = stack.pop();
+    let next = stack.pop();
 
     switch(next.type) {
     case LEX_KEY:
@@ -230,7 +230,7 @@ function reduce(stack) {
 
         if (is(stack.peek(), LEX_KEY)) {
             log("Error rule 4");
-            var keyValue = stack.pop().value;
+            let keyValue = stack.pop().value;
             next.value = keyValue + next.value;
             stack.push(next);
             return true;
@@ -313,7 +313,7 @@ function reduce(stack) {
 	
 	if (is(stack.peek(), LEX_KEY) && (stack.last(1), LEX_COMMA)) {
 	    log("Error rule 7");
-	    var l = stack.pop();
+	    let l = stack.pop();
 	    //stack.pop();
 	    stack.push({type: LEX_VALUE, 'value': l.value});
 	    log("Start subreduce... (" + l.value + ")");
@@ -335,7 +335,7 @@ function reduce(stack) {
 
 	if (is(stack.peek(), LEX_KEY) || is(stack.peek(), LEX_VALUE) || is(stack.peek(), LEX_VLIST)) {
 	    log("Rule 16");
-	    var key = stack.pop();
+	    let key = stack.pop();
 	    stack.push({'type': LEX_KV, 'key': key.value, 'value': next.value});
 	    return true;
 	}
@@ -390,7 +390,7 @@ function reduce(stack) {
 	
 	if (is(stack.peek(), LEX_VALUE) && is(stack.last(1), LEX_LB)) {
 	    log("Rule 23");
-	    var val = stack.pop().value;
+	    let val = stack.pop().value;
 	    stack.pop();
 	    stack.push({type: LEX_LIST, 'value': [val]});
 	    return true;
@@ -449,7 +449,7 @@ function reduce(stack) {
 
 
 function compileOST(tree) {
-    var rawTypes = ["boolean", "number", "string"];
+    let rawTypes = ["boolean", "number", "string"];
 
     if (rawTypes.indexOf((typeof tree)) != -1)
 	return tree;

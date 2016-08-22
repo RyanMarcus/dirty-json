@@ -14,7 +14,9 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with dirty-json.  If not, see <http://www.gnu.org/licenses/>.
 
-var parser = require('./parser');
+"use strict";
+
+let parser = require('./parser');
 
 module.exports.parse = parse;
 function parse(text) {

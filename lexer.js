@@ -45,7 +45,7 @@ const LEX_LB = -4;
 const LEX_DOT = -5;
 
 
-var lexMap = {
+const lexMap = {
 	":": {type: LEX_COLON},
 	",": {type: LEX_COMMA},
 	"{": {type: LEX_LCB},
@@ -55,7 +55,7 @@ var lexMap = {
 	".": {type: LEX_DOT} // TODO: remove?
 };
 
-var lexSpc = [
+const lexSpc = [
 	[/:/, LEX_COLON],
 	[/,/, LEX_COMMA],
 	[/{/, LEX_LCB],
@@ -121,10 +121,10 @@ function lexString(str, emit) {
 
 module.exports.getAllTokens = getAllTokens;
 function getAllTokens(str) {
-	var toR = Q.defer();
+	let toR = Q.defer();
 
-	var arr = [];
-	var emit = function (i) {
+	let arr = [];
+	let emit = function (i) {
 		arr.push(i);
 	};
 
