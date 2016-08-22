@@ -7,8 +7,8 @@
     "node": "4.0.0"
   },
   "scripts": {
-      "test": "node_modules/mocha/bin/mocha",
-      "report": "istanbul cover ./node_modules/mocha/bin/_mocha --report lcovonly -- -R spec && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && rm -rf ./coverage"
+    "test": "node_modules/mocha/bin/mocha",
+    "report": "istanbul cover ./node_modules/mocha/bin/_mocha --report lcovonly -- -R spec && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && rm -rf ./coverage"
   },
   "keywords": [
     "json",
@@ -22,16 +22,15 @@
   },
   "devDependencies": {
     "coveralls": "^2.11.6",
-    "istanbul": "0.4.1",
-    "mocha": "2.3.4"
+    "istanbul": "^0.4.5",
+    "mocha": "^3.0.2"
   },
   "repository": {
     "type": "git",
     "url": "https://github.com/RyanMarcus/dirty-json.git"
   },
-    "jshintConfig": {
-        "esversion": 6,
-        "node": true
-        
-    }
+  "jshintConfig": {
+    "esversion": 6,
+    "node": true
+  }
 }
