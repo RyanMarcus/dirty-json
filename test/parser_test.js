@@ -142,6 +142,26 @@ describe("parser", function () {
 	    compareResults("{      \"test\": null,      \"test2\": [4,      null] }", done);
 	});
 
+        it('should handle a list key with a single object value', function (done) {
+            compareResults('{"key": [{"a":"b"}]}', done);
+        });
+
+        it('should handle multiple list keys with a single object value', function (done) {
+            compareResults('{"key": [{"a":"b"}], "key2": [{"a": "b"}]}', done);
+        });
+
+        it('should handle a list key with a single object value', function (done) {
+            compareResults('{"key": [{"a":2}]}', done);
+        });
+
+        it('should handle multiple list keys with a single object value', function (done) {
+            compareResults('{"key": [{"a":2}], "key2": [{"a": 5.0}]}', done);
+        });
+
+        it('should handle a string key with a single object value', function (done) {
+            compareResults('{"key": ["test"]}', done);
+        });
+
 
     });
 

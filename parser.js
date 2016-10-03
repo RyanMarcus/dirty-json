@@ -396,6 +396,14 @@ function reduce(stack) {
 	    return true;
 	}
 
+        if (is(stack.peek(), LEX_OBJ) && is(stack.last(1), LEX_LB)) {
+	    log("Rule 23b");
+	    let val = stack.pop();
+	    stack.pop();
+	    stack.push({type: LEX_LIST, 'value': [val]});
+	    return true;
+	}
+
 	if (is(stack.peek(), LEX_KEY) && (stack.last(1), LEX_COMMA)) {
 	    log("Error rule 5");
 	    let l = stack.pop();
