@@ -46,97 +46,122 @@ const LEX_DOT = -5;
 
 
 const lexMap = {
-	":": {type: LEX_COLON},
-	",": {type: LEX_COMMA},
-	"{": {type: LEX_LCB},
-	"}": {type: LEX_RCB},
-	"[": {type: LEX_LB},
-	"]": {type: LEX_RB},
-	".": {type: LEX_DOT} // TODO: remove?
+    ":": {type: LEX_COLON},
+    ",": {type: LEX_COMMA},
+    "{": {type: LEX_LCB},
+    "}": {type: LEX_RCB},
+    "[": {type: LEX_LB},
+    "]": {type: LEX_RB},
+    ".": {type: LEX_DOT} // TODO: remove?
 };
 
 const lexSpc = [
-	[/:/, LEX_COLON],
-	[/,/, LEX_COMMA],
-	[/{/, LEX_LCB],
-	[/}/, LEX_RCB],
-	[/\[/, LEX_LB],
-	[/\]/, LEX_RB],
-	[/\./, LEX_DOT] // TODO: remove?
+    [/:/, LEX_COLON],
+    [/,/, LEX_COMMA],
+    [/{/, LEX_LCB],
+    [/}/, LEX_RCB],
+    [/\[/, LEX_LB],
+    [/\]/, LEX_RB],
+    [/\./, LEX_DOT] // TODO: remove?
 ];
 
+function stripslashes (str) {
+  // +   original by: Kevin van Zonneveld (http://kevin.vanzonneveld.net)
+  // +   improved by: Ates Goral (http://magnetiq.com)
+  // +      fixed by: Mick@el
+  // +   improved by: marrtins
+  // +   bugfixed by: Onno Marsman
+  // +   improved by: rezna
+  // +   input by: Rick Waldron
+  // +   reimplemented by: Brett Zamir (http://brett-zamir.me)
+  // +   input by: Brant Messenger (http://www.brantmessenger.com/)
+  // +   bugfixed by: Brett Zamir (http://brett-zamir.me)
+  // *     example 1: stripslashes('Kevin\'s code');
+  // *     returns 1: "Kevin's code"
+  // *     example 2: stripslashes('Kevin\\\'s code');
+  // *     returns 2: "Kevin\'s code"
+  return (str + '').replace(/\\(.?)/g, function (s, n1) {
+    switch (n1) {
+    case '\\':
+      return '\\';
+    case '0':
+      return '\u0000';
+    case '':
+      return '';
+    default:
+      return n1;
+    }
+  });
+}
+
 function getLexer(string) {
-	let lexer = new Lexer();
-	lexer.addRule(/"([\s\S]*?)("|$)/, (lexeme, txt) => {
-		return {type: LEX_QUOTE, value: txt};
+    let lexer = new Lexer();
+    lexer.addRule(/"((?:[^"\\]+|\\.)*)("|$)/, (lexeme, txt) => {
+	return {type: LEX_QUOTE, value: stripslashes(txt)};
+    });
+
+    lexer.addRule(/'((?:[^'\\]+|\\.)*)('|$)/, (lexeme, txt) => {
+	return {type: LEX_QUOTE, value: stripslashes(txt)};
+    });
+
+    lexer.addRule(/[\-0-9]*\.[0-9]+/, lexeme => {
+	return {type: LEX_FLOAT, value: parseFloat(lexeme)};
+    });
+
+    lexer.addRule(/[\-0-9]+/, lexeme => {
+	return {type: LEX_INT, value: parseInt(lexeme)};
+    });
+
+    lexSpc.forEach(item => {
+	lexer.addRule(item[0], lexeme => {
+	    return {type: item[1], value: lexeme};
 	});
+    });
 
-	lexer.addRule(/'([\s\S]*?)('|$)/, (lexeme, txt) => {
-		return {type: LEX_QUOTE, value: txt};
-	});
+    lexer.addRule(/\s/, lexeme => {
+	// chomp whitespace...
+    });
 
-	lexer.addRule(/[\-0-9]*\.[0-9]+/, lexeme => {
-		return {type: LEX_FLOAT, value: parseFloat(lexeme)};
-	});
+    lexer.addRule(/./, lexeme => {
+	let lt = LEX_TOKEN;
+	let val = lexeme;
 
-	lexer.addRule(/[\-0-9]+/, lexeme => {
-		return {type: LEX_INT, value: parseInt(lexeme)};
-	});
+	
+	return {type: lt, value: val};
+    });
 
-	lexSpc.forEach(item => {
-		lexer.addRule(item[0], lexeme => {
-			return {type: item[1], value: lexeme};
-		});
-	});
+    lexer.setInput(string);
 
-	lexer.addRule(/\s/, lexeme => {
-		// chomp whitespace...
-	});
-
-	lexer.addRule(/./, lexeme => {
-		let lt = LEX_TOKEN;
-		let val = lexeme;
-
-		
-		return {type: lt, value: val};
-	});
-
-	lexer.setInput(string);
-
-	return lexer;
+    return lexer;
 }
 
 
 
 module.exports.lexString = lexString;
 function lexString(str, emit) {
-	let lex = getLexer(str);
+    let lex = getLexer(str);
 
-	let token = "";
-	while ((token = lex.lex())) {
-		emit(token);
-	}
-	
+    let token = "";
+    while ((token = lex.lex())) {
+	emit(token);
+    }
+    
 }
 
 module.exports.getAllTokens = getAllTokens;
 function getAllTokens(str) {
-	let toR = Q.defer();
+    let toR = Q.defer();
 
-	let arr = [];
-	let emit = function (i) {
-		arr.push(i);
-	};
+    let arr = [];
+    let emit = function (i) {
+	arr.push(i);
+    };
 
-	lexString(str, emit);
+    lexString(str, emit);
 
-	toR.resolve(arr);
-	return toR.promise;
+    toR.resolve(arr);
+    return toR.promise;
 }
 
 
 
-
-/*getAllTokens('{ "test0": "a '+"\n"+'string" }').then(function(res) {
- 	console.log(res);
-});*/

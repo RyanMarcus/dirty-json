@@ -162,6 +162,14 @@ describe("parser", function () {
             compareResults('{"key": ["test"]}', done);
         });
 
+        it('should handle escaped double-quotes', function (done) {
+            compareResults('["this\\"is", "a test"]', done);
+        });
+
+        it('should handle curly braces in a quoted string', function (done) {
+            compareResults('{"action": "with curly \\"${blahblah}\\""}', done);
+        });
+
 
     });
 
@@ -246,7 +254,11 @@ describe("parser", function () {
             
         });
 	
-	
+	it('should handle mixed quotes/single quotes with curly braces', function(done) {
+            compareResultsToValid('{"action": \'this has ${} in it\'}',
+                                  '{"action": "this has ${} in it"}',
+                                  done);
+        });
 	
 	
 	describe("with new lines", function() {
