@@ -170,6 +170,9 @@ describe("parser", function () {
             compareResults('{"action": "with curly \\"${blahblah}\\""}', done);
         });
 
+        it('should handle raw string values', function (done) {
+	    compareResults('"test"', done);
+	});
 
     });
 
@@ -241,7 +244,7 @@ describe("parser", function () {
             
         });
 
-                it('should handle raw strings before values in a map', function(done) {
+        it('should handle raw strings before values in a map', function(done) {
             compareResultsToValid('{"this": hex3}',
                                   '{"this": "hex3"}',
                                   done);
@@ -352,14 +355,6 @@ describe("parser", function () {
 
 	it('should throw on ]:"test"', done => {
 	    dJSON.parse(']:"test"').then(r => {
-		done(new Error("Should have thrown exception"));
-	    }).catch(e => {
-		done();
-	    });
-	});
-
-	it('should throw on "test"', done => {
-	    dJSON.parse('"test"').then(r => {
 		done(new Error("Should have thrown exception"));
 	    }).catch(e => {
 		done();
