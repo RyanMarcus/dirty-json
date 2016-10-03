@@ -86,8 +86,6 @@ function stripslashes (str) {
       return '\\';
     case '0':
       return '\u0000';
-    case '':
-      return '';
     default:
       return n1;
     }

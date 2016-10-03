@@ -262,7 +262,20 @@ describe("parser", function () {
                                   '{"action": "this has ${} in it"}',
                                   done);
         });
-	
+
+
+        describe("with special characters", function () {
+            it('should handle all kinds of escaped characters', function(done) {
+                dJSON.parse('" \\\\ \\"\\0!"').then(function (r) {
+                    assert.equal(r[0], ' ');
+                    assert.equal(r[1], '\\');
+                    assert.equal(r[2], ' ');
+                    assert.equal(r[3], '"');
+                    assert.equal(r[4], '\0');
+                    assert.equal(r[5], '!');
+                }).then(done, done);
+            });
+        });
 	
 	describe("with new lines", function() {
 	    it ('should handle a newline in a string in object', function(done) {

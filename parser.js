@@ -487,11 +487,7 @@ function compileOST(tree) {
 	return compileOST(tree.value);
     }
 
-    if (is(tree, LEX_VALUE)) {
-        return tree.value;
-    }
-
-    throw new Error("Uncaught type in compile: " + JSON.stringify(tree));
-
+    // it must be a value
+    return tree.value;
 }
 

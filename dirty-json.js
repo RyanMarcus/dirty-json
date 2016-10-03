@@ -25,7 +25,10 @@ function parse(text) {
         try {
             let json = JSON.parse(text);
             // if we didn't throw, it was valid JSON!
+            /* istanbul ignore next */
             console.warn("dirty-json got valid JSON that failed with the custom parser. We're returning the valid JSON, but please file a bug report here: https://github.com/RyanMarcus/dirty-json/issues  -- the JSON that caused the failure was: " + text);
+
+            /* istanbul ignore next */
             return json;
         } catch (json_error) {
             throw e;
