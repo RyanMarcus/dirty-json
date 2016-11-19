@@ -102,7 +102,7 @@ function getLexer(string) {
 	return {type: LEX_QUOTE, value: stripslashes(txt)};
     });
 
-    lexer.addRule(/[\-0-9]*\.[0-9]+/, lexeme => {
+    lexer.addRule(/[\-0-9]*\.[0-9]*/, lexeme => {
 	return {type: LEX_FLOAT, value: parseFloat(lexeme)};
     });
 
