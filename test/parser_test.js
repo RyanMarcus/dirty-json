@@ -263,6 +263,10 @@ describe("parser", function () {
                                   done);
         });
 
+        it ('should handle a decimal with no trailing digits', function(done) {
+            compareResultsToValid('{ "test": 5. }', '{"test": 5.0 }', done);
+        });
+
 
         describe("with special characters", function () {
             it('should handle all kinds of escaped characters', function(done) {
