@@ -263,8 +263,12 @@ describe("parser", function () {
                                   done);
         });
 
-        it ('should handle a decimal with no trailing digits', function(done) {
+        it('should handle a decimal with no trailing digits', function(done) {
             compareResultsToValid('{ "test": 5. }', '{"test": 5.0 }', done);
+        });
+
+        it('should handle a decimal with no trailing digits', function(done) {
+            compareResultsToValid('{ "test": .5 }', '{"test": 0.5 }', done);
         });
 
 
