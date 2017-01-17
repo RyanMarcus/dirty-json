@@ -22,6 +22,7 @@ module.exports.parse = parse;
 function parse(text, fallback) {
     return parser.parse(text).catch(e => {
         // our parser threw an error! see if the JSON was valid...
+        /* istanbul ignore next */
         if (fallback === false) {
             console.log("throwing!!!");
             throw e;
