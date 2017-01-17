@@ -380,6 +380,14 @@ function reduce(stack) {
 	    stack.push({'type': LEX_LIST, 'value': l.value});
 	    return true;
 	}
+
+        if (is(stack.peek(), LEX_LIST) && is(stack.last(1), LEX_LB)) {
+            log("Rule 19b");
+            let l = stack.pop();
+            stack.pop();
+            stack.push({'type': LEX_LIST, 'value': [l.value]});
+            return true;
+        }
 	
 	if (is(stack.peek(), LEX_LB)) {
 	    log("Rule 22");

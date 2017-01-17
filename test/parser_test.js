@@ -21,7 +21,7 @@ var dJSON = require("../dirty-json");
 
 
 function compareResults(json, done) {
-    dJSON.parse(json).then(function (res) {
+    dJSON.parse(json, false).then(function (res) {
 	jeq(res, JSON.parse(json));
     }).then(done, done);
 }
@@ -107,6 +107,18 @@ describe("parser", function () {
 	it('should handle embedded lists when the first item is a list', function (done) {
 	    compareResults('[[1, false], 2, [3, 4], 5]', done);
 	});
+
+        it('should handle a nested list', function(done) {
+            compareResults('{ "rows": [["this", "is", "failing"]] }', done);
+        });
+
+        it('should handle a nested list', function(done) {
+            compareResults('{ "rows": [[], ["this", "is", "failing"]] }', done);
+        });
+
+        it('should handle a nested list', function(done) {
+            compareResults('{ "rows": [["this", "is", "failing"], []] }', done);
+        });
 
 
 	it('should handle objects embedded in lists', function (done) {

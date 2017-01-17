@@ -19,9 +19,14 @@
 let parser = require('./parser');
 
 module.exports.parse = parse;
-function parse(text) {
+function parse(text, fallback) {
     return parser.parse(text).catch(e => {
         // our parser threw an error! see if the JSON was valid...
+        if (fallback === false) {
+            console.log("throwing!!!");
+            throw e;
+        }
+        
         try {
             let json = JSON.parse(text);
             // if we didn't throw, it was valid JSON!
@@ -35,5 +40,4 @@ function parse(text) {
         }
     });
 }
-
 
