@@ -1,4 +1,4 @@
-var dJSON = require('./dirty-json');
+var dJSON = require('dirty-json');
 
 
 angular.module('djson', []).controller('DemoCtrl', ['$scope', function($scope) {
