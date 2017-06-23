@@ -42,3 +42,4 @@ function parse(text, fallback) {
     });
 }
 
+//parse('{"test": [1,,2]}').then(console.log).catch(console.err);

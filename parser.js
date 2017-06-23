@@ -16,8 +16,6 @@
 
 "use strict";
 
-let fs = require('fs');
-let Stream = require('stream');
 let lexer = require("./lexer");
 let Q = require('q');
 
@@ -455,7 +453,17 @@ function reduce(stack) {
 	}
 
 	throw new Error("Found } that I can't handle.");
+        
+    case LEX_COMMA:
+        if (is(stack.peek(), LEX_COMMA)) {
+            log("Comma error rule");
+            // do nothing -- so don't push the extra comma onto the stack
+            return true;
+        }
     }
+
+
+    
 
 
     stack.push(next);

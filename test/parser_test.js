@@ -287,6 +287,21 @@ describe("parser", function () {
             compareResultsToValid('{ "test": .5 }', '{"test": 0.5 }', done);
         });
 
+        it('should handle multiple commas', function(done) {
+            compareResultsToValid(
+                '{"ss":[["Thu","7:00","Final",,"BAL","19","ATL","20",,,"56808",,"PRE4","2015"],["Thu","7:00","Final",,"NO","10","GB","38",,,"56809",,"PRE4","2015"]]}',
+                '{"ss":[["Thu","7:00","Final","BAL","19","ATL","20","56808","PRE4","2015"],["Thu","7:00","Final","NO","10","GB","38","56809","PRE4","2015"]]}',
+                done);
+        });
+
+        it('should handle multiple commas', function(done) {
+            compareResultsToValid(
+                '{"test": [1,,,,,,,,,2]}',
+                '{"test": [1,2]}',
+                done
+            );
+        });
+
         describe("with special characters", function () {
             it('should handle all kinds of escaped characters', function(done) {
                 dJSON.parse('" \\\\ \\"\\0!"').then(function (r) {
