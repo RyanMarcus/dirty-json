@@ -12,7 +12,8 @@
   },
   "keywords": [
     "json",
-    "parser"
+    "parser",
+    "malformed"
   ],
   "author": "Ryan Marcus <ryan@rmarcus.info>",
   "license": "AGPL-3.0",
