@@ -42,4 +42,6 @@ function parse(text, fallback) {
     });
 }
 
-//parse('{"test": [1,,2]}').then(console.log).catch(console.err);
+
+console.log("r: " + JSON.parse('["\\" \\\\\ \\/ \\b \\f \\n \\r \\t"]'));
+parse('["\\" \\\\\ \\/ \\b \\f \\n \\r \\t"]').then(console.log).catch(console.err);

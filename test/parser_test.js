@@ -16,8 +16,9 @@
 
 "use strict";
 
-var assert = require("assert");
-var dJSON = require("../dirty-json");
+const assert = require("assert");
+const dJSON = require("../dirty-json");
+const fs = require("fs");
 
 
 function compareResults(json, done) {
@@ -185,6 +186,17 @@ describe("parser", function () {
         it('should handle raw string values', function (done) {
 	    compareResults('"test"', done);
 	});
+
+
+        describe("should pass the NST / Minefield test cases", function() {
+            fs.readdirSync("test/nst").forEach(f => {
+                console.log(f);
+                it(`should parse ${f} correctly`, function(done) {
+                    const str = fs.readFileSync("test/nst/" + f);
+                    compareResults(str, done);
+                });
+            });
+        });
 
     });
 
@@ -413,4 +425,7 @@ describe("parser", function () {
 	});
 	
     });
+
+
+
 });

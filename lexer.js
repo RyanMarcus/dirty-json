@@ -16,8 +16,9 @@
 
 "use strict";
 
-let Q = require("q");
-let Lexer = require("lex");
+const Q = require("q");
+const Lexer = require("lex");
+const unescapeJs = require("unescape-js");
 
 // terminals
 const LEX_KV = 0;
@@ -65,6 +66,10 @@ const lexSpc = [
     [/\./, LEX_DOT] // TODO: remove?
 ];
 
+function parseString(str) {
+    return unescapeJs(str);
+}
+
 function stripslashes (str) {
   // +   original by: Kevin van Zonneveld (http://kevin.vanzonneveld.net)
   // +   improved by: Ates Goral (http://magnetiq.com)
@@ -95,17 +100,23 @@ function stripslashes (str) {
 function getLexer(string) {
     let lexer = new Lexer();
     lexer.addRule(/"((?:[^"\\]+|\\.)*)("|$)/, (lexeme, txt) => {
-	return {type: LEX_QUOTE, value: stripslashes(txt)};
+	return {type: LEX_QUOTE, value: parseString(txt)};
     });
 
     lexer.addRule(/'((?:[^'\\]+|\\.)*)('|$)/, (lexeme, txt) => {
-	return {type: LEX_QUOTE, value: stripslashes(txt)};
+	return {type: LEX_QUOTE, value: parseString(txt)};
     });
 
-    lexer.addRule(/[\-0-9]*\.[0-9]*/, lexeme => {
+    // floats with a dot
+    lexer.addRule(/[\-0-9]*\.[0-9]*([eE][\+\-]?)?[0-9]*/, lexeme => {
 	return {type: LEX_FLOAT, value: parseFloat(lexeme)};
     });
 
+    // floats without a dot but with e notation
+    lexer.addRule(/\-?[0-9]+([eE][\+\-]?)[0-9]*/, lexeme => {
+	return {type: LEX_FLOAT, value: parseFloat(lexeme)};
+    });
+    
     lexer.addRule(/[\-0-9]+/, lexeme => {
 	return {type: LEX_INT, value: parseInt(lexeme)};
     });
