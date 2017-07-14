@@ -43,5 +43,5 @@ function parse(text, fallback) {
 }
 
 
-console.log("r: " + JSON.stringify(JSON.parse('["\\" \\\\\ \\/ \\b \\f \\n \\r \\t"]')));
-parse('["\\" \\\\\ \\/ \\b \\f \\n \\r \\t"]').then(console.log).catch(console.err);
+//console.log(JSON.stringify(JSON.parse('["\\" \\\\\ \\/ \\b \\f \\n \\r \\t"]')));
+//parse('["\\" \\\\\ \\/ \\b \\f \\n \\r \\t"]').then(JSON.stringify).then(console.log).catch(console.err);

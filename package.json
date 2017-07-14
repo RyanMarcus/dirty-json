@@ -20,7 +20,8 @@
   "dependencies": {
     "lex": "^1.7.9",
     "q": "^1.4.1",
-    "unescape-js": "^1.0.8"
+    "unescape-js": "^1.0.8",
+    "utf8": "^2.1.2"
   },
   "devDependencies": {
     "coveralls": "^2.11.6",

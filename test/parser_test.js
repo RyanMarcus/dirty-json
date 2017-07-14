@@ -190,9 +190,14 @@ describe("parser", function () {
 
         describe("should pass the NST / Minefield test cases", function() {
             fs.readdirSync("test/nst").forEach(f => {
-                console.log(f);
+                if (!f.endsWith(".json"))
+                    return;
+                
                 it(`should parse ${f} correctly`, function(done) {
-                    const str = fs.readFileSync("test/nst/" + f);
+                    const str = fs.readFileSync("test/nst/" + f,
+                                                {"options":
+                                                 {"encoding": "utf8" }
+                                                });
                     compareResults(str, done);
                 });
             });
