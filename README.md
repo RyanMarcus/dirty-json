@@ -1,6 +1,7 @@
 # dirty-json
 
-[ ![Codeship Status for RyanMarcus/dirty-json](https://codeship.com/projects/cbc19870-2e42-0132-d30c-4adef3b19db7/status)](https://www.codeship.io/projects/39346)  [![Coverage Status](https://coveralls.io/repos/github/RyanMarcus/dirty-json/badge.svg?branch=master)](https://coveralls.io/github/RyanMarcus/dirty-json?branch=master) ![NPM version](https://badge.fury.io/js/dirty-json.svg)
+[ ![Codeship Status for RyanMarcus/dirty-json](https://codeship.com/projects/cbc19870-2e42-0132-d30c-4adef3b19db7/status)](https://www.codeship.io/projects/39346) [![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2FRyanMarcus%2Fdirty-json.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2FRyanMarcus%2Fdirty-json?ref=badge_shield)
+ [![Coverage Status](https://coveralls.io/repos/github/RyanMarcus/dirty-json/badge.svg?branch=master)](https://coveralls.io/github/RyanMarcus/dirty-json?branch=master) ![NPM version](https://badge.fury.io/js/dirty-json.svg)
 
 
 [ ![AGPL](http://www.gnu.org/graphics/agplv3-155x51.png) ](http://www.gnu.org/licenses/agpl-3.0.en.html)
@@ -89,3 +90,6 @@ Currently `dirty-json` uses a lexer [powered by lex](https://github.com/aaditmsh
 > 
 > You should have received a copy of the GNU Affero General Public License
 > along with dirty-json.  If not, see <http://www.gnu.org/licenses/>.
+
+
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2FRyanMarcus%2Fdirty-json.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2FRyanMarcus%2Fdirty-json?ref=badge_large)
