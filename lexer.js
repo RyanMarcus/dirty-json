@@ -149,7 +149,5 @@ function getAllTokens(str) {
     return toR.promise;
 }
 
-console.log("\"this is a \\\" test\"");
-getAllTokens("\"this is a \\\" test\"").then(console.log);
 
 
