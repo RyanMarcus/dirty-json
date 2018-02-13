@@ -11,7 +11,6 @@ npm install dirty-json
 ```
 
 
-
 A JSON parser that tries to handle non-conforming or otherwise invalid JSON.
 
 I still need to make a lot of the internals of the parser asynchronous.
@@ -74,6 +73,10 @@ Since `dirty-json` is handling malformed JSON, it will not always produce the re
 
 ## How does it work?
 Currently `dirty-json` uses a lexer [powered by lex](https://github.com/aaditmshah/lexer) and a hand-written `LR(1)` parser. It shouldn't be used in any environment that requires reliable or fast results.
+
+## Security concerns
+
+This package makes heavy use of regular expressions in its lexer. As a result, it may be vulnerable to a [REDOS attack](https://snyk.io/blog/redos-and-catastrophic-backtracking). Versions prior to `0.5.1` and after `0.5.0` were *definitely* vulnerable (thanks to [Jamie Davis](http://people.cs.vt.edu/~davisjam/) for pointing this out). I believe version `0.5.1` and later are safe, but since I do not know of any tool to verify a RegEx, I can't prove it. 
 
 ## License
 > Copyright 2016, 2015, 2014 Ryan Marcus
