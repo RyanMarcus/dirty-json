@@ -256,6 +256,50 @@ describe("parser", function () {
 	    compareResultsToValid('["this", that]', '["this", "that"]', done);
 	});
 
+        it('should handle non-quoted string values in lists', function(done) {
+	    compareResultsToValid('[this, that]', '["this", "that"]', done);
+	});
+
+        it('should handle non-quoted string values in lists with trailing comma', function(done) {
+	    compareResultsToValid('[this, that,]', '["this", "that"]', done);
+	});
+
+
+        it('should handle non-quoted string values in lists', function(done) {
+	    compareResultsToValid('[a, b]', '["a", "b"]', done);
+	});
+
+        
+        it('should handle non-quoted string values in lists with trailing comma', function(done) {
+	    compareResultsToValid('[a,b,c,]', '["a", "b", "c"]', done);
+	});
+
+
+        it('should handle non-quoted string values in nested lists with trailing comma', function(done) {
+	    compareResultsToValid('[a,[b,d,],[c,],]', '["a", ["b", "d"], ["c"]]', done);
+	});
+
+        it('should handle non-quoted singletons in nested lists with trailing comma', function(done) {
+	    compareResultsToValid('[a,[b,],[c,],]', '["a", ["b"], ["c"]]', done);
+	});
+
+        it('should handle  object singletons in lists with trailing comma', function(done) {
+	    compareResultsToValid('[{"a": 1},]','[{"a": 1}]', done);
+	});
+
+        it('should handle string singletons in lists with trailing comma', function(done) {
+	    compareResultsToValid('["a",]','["a"]', done);
+	});
+
+        it('should handle integer singletons in lists with trailing comma', function(done) {
+	    compareResultsToValid('[5,]','[5]', done);
+	});
+
+        it('should handle float singletons in lists with trailing comma', function(done) {
+	    compareResultsToValid('[0.05,]','[0.05]', done);
+	});
+
+
 	it('should handle non-quoted string values in lists', function(done) {
 	    compareResultsToValid('["this", that, "another", maybe]', '["this", "that", "another", "maybe"]', done);
 	});
@@ -409,6 +453,13 @@ describe("parser", function () {
 	
 
 	
+    });
+
+    describe("tickets", () => {
+        it("should handle ticket #10", done => {
+            compareResultsToValid('{\n   "some": [a,b,c,],\n   "b": a\n}', '{"some": ["a", "b", "c"], "b": "a"}', done);
+            
+        });
     });
 
     describe("should throw exceptions for JSON that is too malformed to deal with", () => {
