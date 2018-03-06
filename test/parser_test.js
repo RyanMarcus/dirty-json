@@ -464,7 +464,7 @@ describe("parser", function () {
 
     describe("should throw exceptions for JSON that is too malformed to deal with", () => {
 	it('should throw on }}', done => {
-	    dJSON.parse('}}').then(r => {
+	    dJSON.parse('\n\n\n\n\n   }}').then(r => {
 		done(new Error("Should have thrown exception"));
 	    }).catch(e => {
 		done();

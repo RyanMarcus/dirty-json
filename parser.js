@@ -338,7 +338,8 @@ function reduce(stack) {
         }
 
 
-        throw new Error("Got a :value that can't be handled");
+        throw new Error("Got a :value that can't be handled at line " +
+                       next.row + ":" + next.col);
 
     case LEX_KV:
         if (is(stack.last(0), LEX_COMMA) && is(stack.last(1), LEX_KVLIST)) {
@@ -489,7 +490,9 @@ function reduce(stack) {
             return true;
         }
 
-        throw new Error("Found } that I can't handle.");
+        throw new Error("Found } that I can't handle at line " +
+                        next.row + ":" + next.col);
+
         
     case LEX_COMMA:
         if (is(stack.peek(), LEX_COMMA)) {

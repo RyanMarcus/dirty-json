@@ -76,44 +76,61 @@ function parseString(str) {
 
 function getLexer(string) {
     let lexer = new Lexer();
+
+    let col = 0;
+    let row = 0;
+    
     lexer.addRule(/"((?:\\.|[^"])*)($|")/, (lexeme, txt) => {
-        return {type: LEX_QUOTE, value: parseString(txt)};
+        col += lexeme.length;
+        return {type: LEX_QUOTE, value: parseString(txt), row, col};
     });
 
     lexer.addRule(/'((?:\\.|[^'])*)($|')/, (lexeme, txt) => {
-        return {type: LEX_QUOTE, value: parseString(txt)};
+        col += lexeme.length;
+        return {type: LEX_QUOTE, value: parseString(txt), row, col};
     });
 
     // floats with a dot
     lexer.addRule(/[\-0-9]*\.[0-9]*([eE][\+\-]?)?[0-9]*/, lexeme => {
-        return {type: LEX_FLOAT, value: parseFloat(lexeme)};
+        col += lexeme.length;
+        return {type: LEX_FLOAT, value: parseFloat(lexeme), row, col};
     });
 
     // floats without a dot but with e notation
     lexer.addRule(/\-?[0-9]+([eE][\+\-]?)[0-9]*/, lexeme => {
-        return {type: LEX_FLOAT, value: parseFloat(lexeme)};
+        col += lexeme.length;
+        return {type: LEX_FLOAT, value: parseFloat(lexeme), row, col};
     });
     
     lexer.addRule(/[\-0-9]+/, lexeme => {
-        return {type: LEX_INT, value: parseInt(lexeme)};
+        col += lexeme.length;
+        return {type: LEX_INT, value: parseInt(lexeme), row, col};
     });
 
     lexSpc.forEach(item => {
         lexer.addRule(item[0], lexeme => {
-            return {type: item[1], value: lexeme};
+            col += lexeme.length;
+            return {type: item[1], value: lexeme, row, col};
         });
     });
 
     lexer.addRule(/\s/, lexeme => {
         // chomp whitespace...
+        if (lexeme == "\n") {
+            col = 0;
+            row++;
+        } else {
+            col += lexeme.length;
+        }
     });
 
     lexer.addRule(/./, lexeme => {
+        col += lexeme.length;
+        
         let lt = LEX_TOKEN;
         let val = lexeme;
 
-
-        return {type: lt, value: val};
+        return {type: lt, value: val, row, col};
     });
 
     lexer.setInput(string);
