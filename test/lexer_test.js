@@ -48,235 +48,231 @@ const LEX_DOT = -5;
 describe("lexer", function () {
     describe("getAllTokens()", function () {
         it('should handle an empty string', function (done) {
-            lexer.getAllTokens("").then(function (res) {
-                assert.equal(res.length, 0);
-            }).then(done, done);
+            const res = lexer.getAllTokens("");
+            assert.equal(res.length, 0);
+            done();
         });
 
         it('should handle quoted strings', function (done) {
-            lexer.getAllTokens('"this is a test"').then(function(res) {
-                assert.equal(res.length, 1);
-                assert.equal(res[0].value, "this is a test");
-            }).then(done);
-
+            const res = lexer.getAllTokens('"this is a test"');
+            assert.equal(res.length, 1);
+            assert.equal(res[0].value, "this is a test");
+            done();
         });
 
         it('should handle integers', function (done) {
-            lexer.getAllTokens('5600').then(function(res) {
-                assert.equal(res.length, 1);
-                assert.equal(res[0].type, LEX_INT);
-                assert.equal(res[0].value, 5600);
-            }).then(done, done);
+            const res = lexer.getAllTokens('5600');
+            assert.equal(res.length, 1);
+            assert.equal(res[0].type, LEX_INT);
+            assert.equal(res[0].value, 5600);
+            done();
         });
 
         it('should handle negative integers', function (done) {
-            lexer.getAllTokens('-5600').then(function(res) {
-                assert.equal(res.length, 1);
-                assert.equal(res[0].type, LEX_INT);
-                assert.equal(res[0].value, -5600);
-            }).then(done, done);
+            const res = lexer.getAllTokens('-5600');
+            assert.equal(res.length, 1);
+            assert.equal(res[0].type, LEX_INT);
+            assert.equal(res[0].value, -5600);
+            done();
         });
 
         it('should handle floats', function (done) {
-            lexer.getAllTokens('5600.5').then(function(res) {
-                assert.equal(res.length, 1);
-                assert.equal(res[0].type, LEX_FLOAT);
-                assert.equal(res[0].value, 5600.5);
-            }).then(done, done);
+            const res = lexer.getAllTokens('5600.5');
+            assert.equal(res.length, 1);
+            assert.equal(res[0].type, LEX_FLOAT);
+            assert.equal(res[0].value, 5600.5);
+            done();
         });
 
         it('should handle negative floats', function (done) {
-            lexer.getAllTokens('-5600.5').then(function(res) {
-                assert.equal(res.length, 1);
-                assert.equal(res[0].type, LEX_FLOAT);
-                assert.equal(res[0].value, -5600.5);
-            }).then(done, done);
+            const res = lexer.getAllTokens('-5600.5');
+            assert.equal(res.length, 1);
+            assert.equal(res[0].type, LEX_FLOAT);
+            assert.equal(res[0].value, -5600.5);
+            done();
         });
 
 
         it('should handle floats without leading digits', function (done) {
-            lexer.getAllTokens('.5').then(function(res) {
-                assert.equal(res.length, 1);
-                assert.equal(res[0].type, LEX_FLOAT);
-                assert.equal(res[0].value, 0.5);
-            }).then(done, done);
+            const res = lexer.getAllTokens('.5');
+            assert.equal(res.length, 1);
+            assert.equal(res[0].type, LEX_FLOAT);
+            assert.equal(res[0].value, 0.5);
+            done();
         });
 
         it('should handle negative floats without leading digits', function (done) {
-            lexer.getAllTokens('-.5').then(function(res) {
-                assert.equal(res.length, 1);
-                assert.equal(res[0].type, LEX_FLOAT);
-                assert.equal(res[0].value, -0.5);
-            }).then(done, done);
+            const res = lexer.getAllTokens('-.5');
+            assert.equal(res.length, 1);
+            assert.equal(res[0].type, LEX_FLOAT);
+            assert.equal(res[0].value, -0.5);
+            done();
         });
 
         it('should handle special characters', function (done) {
-            lexer.getAllTokens('{}[],:').then(function(res) {
-                assert.equal(res.length, 6);
-                assert.equal(res[0].type, LEX_LCB);
-                assert.equal(res[1].type, LEX_RCB);
-                assert.equal(res[2].type, LEX_LB);
-                assert.equal(res[3].type, LEX_RB);
-                assert.equal(res[4].type, LEX_COMMA);
-                assert.equal(res[5].type, LEX_COLON);
-            }).then(done, done);
+            const res = lexer.getAllTokens('{}[],:');
+            assert.equal(res.length, 6);
+            assert.equal(res[0].type, LEX_LCB);
+            assert.equal(res[1].type, LEX_RCB);
+            assert.equal(res[2].type, LEX_LB);
+            assert.equal(res[3].type, LEX_RB);
+            assert.equal(res[4].type, LEX_COMMA);
+            assert.equal(res[5].type, LEX_COLON);
+            done();
         });
 
         it('should handle quoted special characters', function (done) {
-            lexer.getAllTokens('{}[],:"{}[],:"').then(function(res) {
-                assert.equal(res.length, 7);
-                assert.equal(res[0].type, LEX_LCB);
-                assert.equal(res[1].type, LEX_RCB);
-                assert.equal(res[2].type, LEX_LB);
-                assert.equal(res[3].type, LEX_RB);
-                assert.equal(res[4].type, LEX_COMMA);
-                assert.equal(res[5].type, LEX_COLON);
-                assert.equal(res[6].type, LEX_QUOTE);
-                assert.equal(res[6].value, "{}[],:");
-            }).then(done, done);
+            const res = lexer.getAllTokens('{}[],:"{}[],:"');
+            assert.equal(res.length, 7);
+            assert.equal(res[0].type, LEX_LCB);
+            assert.equal(res[1].type, LEX_RCB);
+            assert.equal(res[2].type, LEX_LB);
+            assert.equal(res[3].type, LEX_RB);
+            assert.equal(res[4].type, LEX_COMMA);
+            assert.equal(res[5].type, LEX_COLON);
+            assert.equal(res[6].type, LEX_QUOTE);
+            assert.equal(res[6].value, "{}[],:");
+            done();
         });
 
         it('should handle quoted numbers', function (done) {
-            lexer.getAllTokens('"576 450.5"').then(function(res) {
-                assert.equal(res.length, 1);
-                assert.equal(res[0].type, LEX_QUOTE);
-                assert.equal(res[0].value, "576 450.5");
-            }).then(done, done);
+            const res = lexer.getAllTokens('"576 450.5"');
+            assert.equal(res.length, 1);
+            assert.equal(res[0].type, LEX_QUOTE);
+            assert.equal(res[0].value, "576 450.5");
+            done();
         });
 
         it('should handle unmatched quotes on the right', function (done) {
-            lexer.getAllTokens('"test" again"').then(function(res) {
-                assert.equal(res.length, 7);
-                assert.equal(res[0].type, LEX_QUOTE);
-                assert.equal(res[0].value, "test");
-
-                assert.equal(res[1].type, LEX_TOKEN);
-                assert.equal(res[1].value, "a");
-
-                assert.equal(res[2].type, LEX_TOKEN);
-                assert.equal(res[2].value, "g");
-
-                assert.equal(res[3].type, LEX_TOKEN);
-                assert.equal(res[3].value, "a");
-
-                assert.equal(res[4].type, LEX_TOKEN);
-                assert.equal(res[4].value, "i");
-
-                assert.equal(res[5].type, LEX_TOKEN);
-                assert.equal(res[5].value, "n");
-
-                assert.equal(res[6].type, LEX_QUOTE);
-                assert.equal(res[6].value, "");
-            }).then(done, done);
-
-
-            it('should handle unmatched quotes on the left', function (done) {
-                lexer.getAllTokens('"test" "again').then(function(res) {
-                    assert.equal(res.length, 2);
-                    assert.equal(res[0].type, LEX_QUOTE);
-                    assert.equal(res[0].value, "test");
-
-                    assert.equal(res[1].type, LEX_QUOTE);
-                    assert.equal(res[1].value, "again");
-                    
-                }).then(done, done);
-            });
-        });
-
-        it('should handle totally unmatched quotes on the left', function (done) {
-            lexer.getAllTokens('"test again').then(function(res) {
-                assert.equal(res.length, 1);
-                assert.equal(res[0].type, LEX_QUOTE);
-                assert.equal(res[0].value, "test again");
-            }).then(done, done);
-        });
-
-        it('should handle totally unmatched quotes on the right', function (done) {
-            lexer.getAllTokens('t"').then(function(res) {
-                assert.equal(res.length, 2);
-                assert.equal(res[0].type, LEX_TOKEN);
-                assert.equal(res[0].value, "t");
-
-                assert.equal(res[1].type, LEX_QUOTE);
-                assert.equal(res[1].value, "");
-            }).then(done, done);
-        });
-
-        it('should handle single quoted strings', function (done) {
-            lexer.getAllTokens("'this'    'is'").then(function(res) {
-                assert.equal(res.length, 2);
-                assert.equal(res[0].type, LEX_QUOTE);
-                assert.equal(res[0].value, "this");
-
-                assert.equal(res[1].type, LEX_QUOTE);
-                assert.equal(res[1].value, "is");
-            }).then(done, done);
-        });
-
-        it('should handle embedded quotes', function (done) { 
-            lexer.getAllTokens('"this is "a" test"').then(function(res) {
-                assert.equal(res.length, 3);
-                assert.equal(res[0].type, LEX_QUOTE);
-                assert.equal(res[0].value, "this is ");
-
-                assert.equal(res[1].type, LEX_TOKEN);
-                assert.equal(res[1].value, "a");
-
-                assert.equal(res[2].type, LEX_QUOTE);
-                assert.equal(res[2].value, " test");
-            }).then(done, done);
-        });
-
-        it('should parse integers as integers', function (done) {
-            lexer.getAllTokens('[4]').then(res => {
-                assert.equal(res.length, 3);
-                assert.equal(res[0].type, LEX_LB);
-                assert.equal(res[1].type, LEX_INT);
-                assert.equal(res[1].value, 4);
-                assert.equal(res[2].type, LEX_RB);
-            }).then(done, done);
-        });
-
-        it('should parse floats as floats', function (done) {
-            lexer.getAllTokens('[4.0]').then(res => {
-                assert.equal(res.length, 3);
-                assert.equal(res[0].type, LEX_LB);
-                assert.equal(res[1].type, LEX_FLOAT);
-                assert.equal(res[1].value, 4.0);
-                assert.equal(res[2].type, LEX_RB);
-            }).then(done, done);
-        });
-
-        it('should handle newlines in quotes', done => {
-            lexer.getAllTokens('{ "test0": "a '+"\n"+'string" }').then( res => {
-                assert.equal(res.length, 5);
-                assert.equal(res[0].type, LEX_LCB);
-                assert.equal(res[1].type, LEX_QUOTE);
-                assert.equal(res[1].value, "test0");
-                assert.equal(res[2].type, LEX_COLON);
-                assert.equal(res[3].type, LEX_QUOTE);
-                assert.equal(res[3].value, "a \nstring");
-                assert.equal(res[4].type, LEX_RCB);
-            }).then(done, done);
-        });
-
-        it('should handle escaped double quotes', done => {
-            lexer.getAllTokens('"this is\\" a test"').then( res => {
-                assert.equal(res.length, 1);
-                assert.equal(res[0].type, LEX_QUOTE);
-                assert.equal(res[0].value, 'this is\" a test');
-            }).then(done, done);
+            const res = lexer.getAllTokens('"test" again"');
+            assert.equal(res.length, 7);
+            assert.equal(res[0].type, LEX_QUOTE);
+            assert.equal(res[0].value, "test");
             
-        });
-
-        it('should handle escaped single quotes', done => {
-            lexer.getAllTokens("'this is\\' a test").then( res => {
-                assert.equal(res.length, 1);
-                assert.equal(res[0].type, LEX_QUOTE);
-                assert.equal(res[0].value, 'this is\' a test');
-            }).then(done, done);
+            assert.equal(res[1].type, LEX_TOKEN);
+            assert.equal(res[1].value, "a");
             
+            assert.equal(res[2].type, LEX_TOKEN);
+            assert.equal(res[2].value, "g");
+            
+            assert.equal(res[3].type, LEX_TOKEN);
+            assert.equal(res[3].value, "a");
+            
+            assert.equal(res[4].type, LEX_TOKEN);
+            assert.equal(res[4].value, "i");
+            
+            assert.equal(res[5].type, LEX_TOKEN);
+            assert.equal(res[5].value, "n");
+            
+            assert.equal(res[6].type, LEX_QUOTE);
+            assert.equal(res[6].value, "");
+            done();
+        });
+        
+        it('should handle unmatched quotes on the left', function (done) {
+            const res = lexer.getAllTokens('"test" "again');
+            assert.equal(res.length, 2);
+            assert.equal(res[0].type, LEX_QUOTE);
+            assert.equal(res[0].value, "test");
+            
+            assert.equal(res[1].type, LEX_QUOTE);
+            assert.equal(res[1].value, "again");
+            done();
         });
     });
+
+    it('should handle totally unmatched quotes on the left', function (done) {
+        const res = lexer.getAllTokens('"test again');
+        assert.equal(res.length, 1);
+        assert.equal(res[0].type, LEX_QUOTE);
+        assert.equal(res[0].value, "test again");
+        done();
+    });
+
+    it('should handle totally unmatched quotes on the right', function (done) {
+        const res = lexer.getAllTokens('t"');
+        assert.equal(res.length, 2);
+        assert.equal(res[0].type, LEX_TOKEN);
+        assert.equal(res[0].value, "t");
+        
+        assert.equal(res[1].type, LEX_QUOTE);
+        assert.equal(res[1].value, "");
+        done();
+    });
+
+    it('should handle single quoted strings', function (done) {
+        const res = lexer.getAllTokens("'this'    'is'");
+        assert.equal(res.length, 2);
+        assert.equal(res[0].type, LEX_QUOTE);
+        assert.equal(res[0].value, "this");
+        
+        assert.equal(res[1].type, LEX_QUOTE);
+        assert.equal(res[1].value, "is");
+        done();
+    });
+
+    it('should handle embedded quotes', function (done) { 
+        const res = lexer.getAllTokens('"this is "a" test"');
+        assert.equal(res.length, 3);
+        assert.equal(res[0].type, LEX_QUOTE);
+        assert.equal(res[0].value, "this is ");
+        
+        assert.equal(res[1].type, LEX_TOKEN);
+        assert.equal(res[1].value, "a");
+        
+        assert.equal(res[2].type, LEX_QUOTE);
+        assert.equal(res[2].value, " test");
+        done();
+    });
+
+    it('should parse integers as integers', function (done) {
+        const res = lexer.getAllTokens('[4]');
+        assert.equal(res.length, 3);
+        assert.equal(res[0].type, LEX_LB);
+        assert.equal(res[1].type, LEX_INT);
+        assert.equal(res[1].value, 4);
+        assert.equal(res[2].type, LEX_RB);
+        done();
+    });
+
+    it('should parse floats as floats', function (done) {
+        const res = lexer.getAllTokens('[4.0]');
+        assert.equal(res.length, 3);
+        assert.equal(res[0].type, LEX_LB);
+        assert.equal(res[1].type, LEX_FLOAT);
+        assert.equal(res[1].value, 4.0);
+        assert.equal(res[2].type, LEX_RB);
+        done();
+    });
+
+    it('should handle newlines in quotes', done => {
+        const res = lexer.getAllTokens('{ "test0": "a '+"\n"+'string" }');
+        assert.equal(res.length, 5);
+        assert.equal(res[0].type, LEX_LCB);
+        assert.equal(res[1].type, LEX_QUOTE);
+        assert.equal(res[1].value, "test0");
+        assert.equal(res[2].type, LEX_COLON);
+        assert.equal(res[3].type, LEX_QUOTE);
+        assert.equal(res[3].value, "a \nstring");
+        assert.equal(res[4].type, LEX_RCB);
+        done();
+    });
+
+    it('should handle escaped double quotes', done => {
+        const res = lexer.getAllTokens('"this is\\" a test"');
+        assert.equal(res.length, 1);
+        assert.equal(res[0].type, LEX_QUOTE);
+        assert.equal(res[0].value, 'this is\" a test');
+        done();
+    });
+
+    it('should handle escaped single quotes', done => {
+        const res = lexer.getAllTokens("'this is\\' a test");
+        assert.equal(res.length, 1);
+        assert.equal(res[0].type, LEX_QUOTE);
+        assert.equal(res[0].value, 'this is\' a test');
+        done();
+    });
 });
+
 

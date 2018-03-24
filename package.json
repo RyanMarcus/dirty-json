@@ -19,7 +19,6 @@
   "license": "AGPL-3.0",
   "dependencies": {
     "lex": "^1.7.9",
-    "q": "^1.4.1",
     "unescape-js": "^1.0.8",
     "utf8": "^2.1.2"
   },

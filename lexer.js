@@ -16,7 +16,6 @@
 
 "use strict";
 
-const Q = require("q");
 const Lexer = require("lex");
 const unescapeJs = require("unescape-js");
 const utf8 = require("utf8");
@@ -153,8 +152,6 @@ function lexString(str, emit) {
 
 module.exports.getAllTokens = getAllTokens;
 function getAllTokens(str) {
-    let toR = Q.defer();
-
     let arr = [];
     let emit = function (i) {
         arr.push(i);
@@ -162,8 +159,7 @@ function getAllTokens(str) {
 
     lexString(str, emit);
 
-    toR.resolve(arr);
-    return toR.promise;
+    return arr;
 }
 
 

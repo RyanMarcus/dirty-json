@@ -22,9 +22,8 @@ const fs = require("fs");
 
 
 function compareResults(json, done) {
-    dJSON.parse(json, false).then(function (res) {
-	jeq(res, JSON.parse(json));
-    }).then(done, done);
+    let result = jeq(dJSON.parse(json, false), JSON.parse(json));
+    done(result);
 }
 
 function compareResultsToValid(invalid, valid, done) {
@@ -34,9 +33,9 @@ function compareResultsToValid(invalid, valid, done) {
 	// it didn't fail!
 	done("json was valid!");
     } catch (e) {
-	dJSON.parse(invalid).then(function (res) {
-	    jeq(res, JSON.parse(valid));
-	}).then(done, done);
+	let result = jeq(dJSON.parse(invalid),
+                         JSON.parse(valid));
+        done(result);
     }
 
 
@@ -365,89 +364,87 @@ describe("parser", function () {
 
         describe("with special characters", function () {
             it('should handle all kinds of escaped characters', function(done) {
-                dJSON.parse('" \\\\ \\"\\0!"').then(function (r) {
-                    assert.equal(r[0], ' ');
-                    assert.equal(r[1], '\\');
-                    assert.equal(r[2], ' ');
-                    assert.equal(r[3], '"');
-                    assert.equal(r[4], '\0');
-                    assert.equal(r[5], '!');
-                }).then(done, done);
+                const r = dJSON.parse('" \\\\ \\"\\0!"');
+                assert.equal(r[0], ' ');
+                assert.equal(r[1], '\\');
+                assert.equal(r[2], ' ');
+                assert.equal(r[3], '"');
+                assert.equal(r[4], '\0');
+                assert.equal(r[5], '!');
+                done();
             });
         });
 	
 	describe("with new lines", function() {
 	    it ('should handle a newline in a string in object', function(done) {
-		
-		dJSON.parse('{ "test0": "a '+"\n"+'string" }').then(function (r) {
-		    assert.equal(r.test0, 'a '+"\n"+'string');
-		}).then(done, done);
+		const r = dJSON.parse('{ "test0": "a '+"\n"+'string" }');
+		assert.equal(r.test0, 'a '+"\n"+'string');
+                done();
 	    });
 
 	    it ('should handle a newline in a string in a list', function(done) {
-		
-		dJSON.parse('["a '+"\n"+'string"]').then(function (r) {
-		    assert.equal(r[0], 'a '+"\n"+'string');
-		}).then(done, done);
+		const r = dJSON.parse('["a '+"\n"+'string"]');
+		assert.equal(r[0], 'a '+"\n"+'string');
+                done();
 	    });
 
 	    it('should handle newline in misquoted string in object', function(done) {
-		var str = 'this\n"quote"\ntext';
-		dJSON.parse('{ "test0": "' + str + '"}').then(function (r) {
-		    assert.equal(r.test0, str);
-		}).then(done, done);
+		const str = 'this\n"quote"\ntext';
+		const r = dJSON.parse('{ "test0": "' + str + '"}');
+		assert.equal(r.test0, str);
+                done();
 	    });
 
 	    it('should handle newline in misquoted string in object', function(done) {
-		var str = 'this\n"quote"\ntext';
-		dJSON.parse('{ "test1": false, "test0": "' + str + '", test2: 5.5}').then(function (r) {
-		    assert.equal(r.test0, str);
-		    assert.equal(r.test1, false);
-		    assert.equal(r.test2, 5.5);
-		}).then(done, done);
+		const str = 'this\n"quote"\ntext';
+                const r = dJSON.parse('{ "test1": false, "test0": "' + str + '", test2: 5.5}');
+		assert.equal(r.test0, str);
+		assert.equal(r.test1, false);
+		assert.equal(r.test2, 5.5);
+                done();
 	    });
 
 	    it('should handle newline in misquoted string in list', function(done) {
-		var str = 'this\n"quote"\ntext';
-		dJSON.parse('["' + str + '"]').then(function (r) {
-		    assert.equal(r[0], str);
-		}).then(done, done);
+		const str = 'this\n"quote"\ntext';
+		const r = dJSON.parse('["' + str + '"]');
+		assert.equal(r[0], str);
+                done();
 	    });
 
 
 	    it('should handle newline in misquoted string in list', function(done) {
-		var str = 'this\n"quote"\ntext';
-		dJSON.parse('[5, 6, "' + str + '", "test"]').then(function (r) {
-		    assert.equal(r[2], str);
-		    assert.equal(r[0], 5);
-		    assert.equal(r[1], 6);
-		    assert.equal(r[3], "test");
-		}).then(done, done);
+		const str = 'this\n"quote"\ntext';
+		const r = dJSON.parse('[5, 6, "' + str + '", "test"]');
+		assert.equal(r[2], str);
+		assert.equal(r[0], 5);
+		assert.equal(r[1], 6);
+		assert.equal(r[3], "test");
+                done();
 	    });
 	});
 
 
 	describe("with embedded HTML", function() {
 	    it('should handle an embedded DIV tag', function(done) {
-		dJSON.parse('["<div class="class">some text</div>"]').then(function (r) {
-		    assert.equal(r[0], '<div class="class">some text</div>');
-		    assert.equal(r.length, 1);
-		}).then(done, done);
+		const r = dJSON.parse('["<div class="class">some text</div>"]');
+		assert.equal(r[0], '<div class="class">some text</div>');
+		assert.equal(r.length, 1);
+                done();
 	    });
 
 	    it('should handle an embedded span tag', function(done) {
-		dJSON.parse('["<span class="class">some text</span>"]').then(function (r) {
-		    assert.equal(r[0], '<span class="class">some text</span>');
-		    assert.equal(r.length, 1);
-		}).then(done, done);
+		const r = dJSON.parse('["<span class="class">some text</span>"]');
+		assert.equal(r[0], '<span class="class">some text</span>');
+		assert.equal(r.length, 1);
+                done();
 	    });
 
 
 	    it('should handle an embedded span tag in a div tag', function(done) {
-		dJSON.parse('["<div class="divclass"><span class="class">some text</span></div>"]').then(function (r) {
-		    assert.equal(r[0], '<div class="divclass"><span class="class">some text</span></div>');
-		    assert.equal(r.length, 1);
-		}).then(done, done);
+		const r = dJSON.parse('["<div class="divclass"><span class="class">some text</span></div>"]');
+		assert.equal(r[0], '<div class="divclass"><span class="class">some text</span></div>');
+		assert.equal(r.length, 1);
+                done();
 	    });
 	});
 	
@@ -464,20 +461,22 @@ describe("parser", function () {
 
     describe("should throw exceptions for JSON that is too malformed to deal with", () => {
 	it('should throw on }}', done => {
-	    dJSON.parse('\n\n\n\n\n   }}').then(r => {
+	    try {
+                dJSON.parse('\n\n\n\n\n   }}');
 		done(new Error("Should have thrown exception"));
-	    }).catch(e => {
+	    } catch (e) {
 		done();
-	    });
+	    }
 	    
 	});
 
 	it('should throw on ]:"test"', done => {
-	    dJSON.parse(']:"test"').then(r => {
+	    try {
+                dJSON.parse(']:"test"');
 		done(new Error("Should have thrown exception"));
-	    }).catch(e => {
+	    } catch (e) {
 		done();
-	    });
+	    }
 	});
 	
     });

@@ -1,4 +1,4 @@
-// Copyright 2015, 2014 Ryan Marcus
+// Copyright 2018, 2017, 2016, 2015, 2014 Ryan Marcus
 // This file is part of dirty-json.
 // 
 // dirty-json is free software: you can redistribute it and/or modify
@@ -20,11 +20,12 @@ let parser = require('./parser');
 
 module.exports.parse = parse;
 function parse(text, fallback) {
-    return parser.parse(text).catch(e => {
+    try {
+        return parser.parse(text);
+    } catch (e) {
         // our parser threw an error! see if the JSON was valid...
         /* istanbul ignore next */
         if (fallback === false) {
-            console.log("throwing!!!");
             throw e;
         }
         
@@ -39,5 +40,6 @@ function parse(text, fallback) {
         } catch (json_error) {
             throw e;
         }
-    });
+
+    }
 }

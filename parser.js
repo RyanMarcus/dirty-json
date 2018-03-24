@@ -17,7 +17,6 @@
 "use strict";
 
 let lexer = require("./lexer");
-let Q = require('q');
 
 // terminals
 const LEX_KV = 0;
@@ -66,8 +65,6 @@ function log(str) {
 
 module.exports.parse = parse;
 function parse(text) {
-    let toR = Q.defer();
-
     let stack = [];
 
     let tokens = [];
@@ -75,28 +72,24 @@ function parse(text) {
         tokens.push(t);
     };
 
-    try {
-        lexer.lexString(text, emit);
+
+    lexer.lexString(text, emit);
 
 
-        for (let i = 0; i < tokens.length; i++) {
-            log("Shifting " + tokens[i].type);
-            stack.push(tokens[i]);
+    for (let i = 0; i < tokens.length; i++) {
+        log("Shifting " + tokens[i].type);
+        stack.push(tokens[i]);
+        log(stack);
+        log("Reducing...");
+        while (reduce(stack)) {
             log(stack);
             log("Reducing...");
-            while (reduce(stack)) {
-                log(stack);
-                log("Reducing...");
-            }
-            
         }
-
-        toR.resolve(compileOST(stack[0]));
-    } catch (e) {
-        toR.reject(e);
+        
     }
-    
-    return toR.promise;
+
+    return compileOST(stack[0]);
+
 }
 
 function reduce(stack) {
