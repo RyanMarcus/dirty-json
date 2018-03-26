@@ -366,6 +366,8 @@ describe("parser", function () {
             );
         });
 
+      
+
         describe("with special characters", function () {
             it('should handle all kinds of escaped characters', function(done) {
                 const r = dJSON.parse('" \\\\ \\"\\0!"');
@@ -376,6 +378,54 @@ describe("parser", function () {
                 assert.equal(r[4], '\0');
                 assert.equal(r[5], '!');
                 done();
+            });
+
+            it("should handle strange symbols", function(done) {
+                compareResultsToValid(
+                    '{te!st: ug&*sd}',
+                    '{"te!st": "ug&*sd"}',
+                    done
+                );
+            });
+            
+            it("should handle strange symbols", function(done) {
+                compareResultsToValid(
+                    '{te!st: [ug&*s,d]}',
+                    '{"te!st": ["ug&*s", "d"]}',
+                    done
+                );
+            });
+
+            it("should handle strange symbols", function(done) {
+                compareResultsToValid(
+                    '{te!st: [ug&*s,d,",,,"]}',
+                    '{"te!st": ["ug&*s", "d", ",,,"]}',
+                    done
+                );
+            });
+
+            it("should handle strange symbols", function(done) {
+                compareResultsToValid(
+                    '{te!st: [ug&*s,d,",,,", {test: aga()in}]}',
+                    '{"te!st": ["ug&*s", "d", ",,,", {"test": "aga()in"}]}',
+                    done
+                );
+            });
+
+            it("should handle strange symbols mixed with numerics", function(done) {
+                compareResultsToValid(
+                    '{te!st: [1,ug&*s,d,",,,", {test: aga()in}]}',
+                    '{"te!st": [1, "ug&*s", "d", ",,,", {"test": "aga()in"}]}',
+                    done
+                );
+            });
+
+            it("should handle strange symbols mixed with numerics", function(done) {
+                compareResultsToValid(
+                    '{te!st: [1,.5,",",true,ug&*s,d,",,,", {test: aga()in}]}',
+                    '{"te!st": [1, 0.5, ",", true, "ug&*s", "d", ",,,", {"test": "aga()in"}]}',
+                    done
+                );
             });
         });
 	
