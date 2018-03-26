@@ -13,7 +13,6 @@ npm install dirty-json
 
 A JSON parser that tries to handle non-conforming or otherwise invalid JSON.
 
-I still need to make a lot of the internals of the parser asynchronous.
 
 You can play around with a demo here: [http://rmarcus.info/dirty-json/](http://rmarcus.info/dirty-json)
 
@@ -43,30 +42,33 @@ While these are obviously cringe-worthy, we still a way to parse them. `dirty-js
 ## Examples
 `dirty-json` does not require object keys to be quoted, and can handle single-quoted value strings.
 
-    var dJSON = require('dirty-json');
-	dJSON.parse("{ test: 'this is a test'}").then(function (r) {
-		console.log(JSON.stringify(r));
-    });
+```javascript
+const dJSON = require('dirty-json');
+const r = dJSON.parse("{ test: 'this is a test'}")
+console.log(JSON.stringify(r));
 
-	// output: {"test":"this is a test"}
+// output: {"test":"this is a test"}
+```
 
 `dirty-json` can handle embedded quotes in strings.
 
-    var dJSON = require('dirty-json');
-	dJSON.parse('{ "test": "some text "a quote" more text"}').then(function (r) {
-		console.log(JSON.stringify(r));
-    });
+```javascript
+const dJSON = require('dirty-json');
+const r = dJSON.parse('{ "test": "some text "a quote" more text"}');
+console.log(JSON.stringify(r));
 
-	// output: {"test":"some text \"aquote\" more text"}
+// output: {"test":"some text \"aquote\" more text"}
+```
 
 `dirty-json` can handle newlines inside of a string.
 
-    var dJSON = require('dirty-json');
-	dJSON.parse('{ "test": "each \n on \n new \n line"}').then(function (r) {
-		console.log(JSON.stringify(r));
-    });
+```javascript
+const dJSON = require('dirty-json');
+const r = dJSON.parse('{ "test": "each \n on \n new \n line"}');
+console.log(JSON.stringify(r));
 
-	// output: {"test":"each \n on \n new \n line"}
+// output: {"test":"each \n on \n new \n line"}
+```
 
 ## But what about THIS ambiguous example?
 Since `dirty-json` is handling malformed JSON, it will not always produce the result that you "think" it should. That's why you should only use this when you absolutely need it. Malformed JSON is malformed for a reason.
@@ -79,7 +81,7 @@ Currently `dirty-json` uses a lexer [powered by lex](https://github.com/aaditmsh
 This package makes heavy use of regular expressions in its lexer. As a result, it may be vulnerable to a [REDOS attack](https://snyk.io/blog/redos-and-catastrophic-backtracking). Versions prior to `0.5.1` and after `0.0.5` were *definitely* vulnerable (thanks to [Jamie Davis](http://people.cs.vt.edu/~davisjam/) for pointing this out). I believe version `0.5.1` and later are safe, but since I do not know of any tool to verify a RegEx, I can't prove it. 
 
 ## License
-> Copyright 2016, 2015, 2014 Ryan Marcus
+> Copyright 2018, 2016, 2015, 2014 Ryan Marcus
 > dirty-json is free software: you can redistribute it and/or modify
 > it under the terms of the GNU Affero General Public License as published by
 > the Free Software Foundation, either version 3 of the License, or
