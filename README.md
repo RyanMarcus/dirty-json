@@ -37,7 +37,7 @@ Or even something like this:
 	Ryan
 	</div>' }
 
-While these are obviously cringe-worthy, we still a way to parse them. `dirty-json` provides a library to do exactly that.
+While these are obviously cringe-worthy, we still want a way to parse them. `dirty-json` provides a library to do exactly that.
 
 ## Examples
 `dirty-json` does not require object keys to be quoted, and can handle single-quoted value strings.
