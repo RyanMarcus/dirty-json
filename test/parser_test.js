@@ -15,7 +15,7 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 // 
 // < end copyright > 
- 
+
 
 "use strict";
 
@@ -365,7 +365,13 @@ describe("parser", function () {
             );
         });
 
-      
+        it('should handle dashes in unquoted strings', function(done) {
+            compareResultsToValid(
+                '{"test": cool-cat}',
+                '{"test": "cool-cat"}',
+                done
+            );
+        });
 
         describe("with special characters", function () {
             it('should handle all kinds of escaped characters', function(done) {
@@ -509,6 +515,14 @@ describe("parser", function () {
         it("should handle ticket #10", done => {
             compareResultsToValid('{\n   "some": [a,b,c,],\n   "b": a\n}', '{"some": ["a", "b", "c"], "b": "a"}', done);
             
+        });
+
+        it("should handle ticket #14", done => {
+            compareResultsToValid(
+                '{ "key": "<div class="cool-css">some text</div>" }',
+                '{ "key": "<div class=\\"cool-css\\">some text</div>"}',
+                done
+            );
         });
     });
 

@@ -103,7 +103,7 @@ function getLexer(string) {
         return {type: LEX_FLOAT, value: parseFloat(lexeme), row, col};
     });
     
-    lexer.addRule(/[\-0-9]+/, lexeme => {
+    lexer.addRule(/\-?[0-9]+/, lexeme => {
         col += lexeme.length;
         return {type: LEX_INT, value: parseInt(lexeme), row, col};
     });
