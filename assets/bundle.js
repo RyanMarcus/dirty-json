@@ -1,24 +1,1342 @@
-(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-"use strict";var dJSON=require("dirty-json");angular.module("djson",[]).controller("DemoCtrl",["$scope",function(e){e.valid=!1,e.examples=[{name:"Invalid JSON: embedded HTML",content:'{ "key": "<div class="coolCSS">some text</div>" }'},{name:"Valid JSON: Simple",content:'{ "key": "value" }'},{name:"Invalid JSON: Simple",content:"{ key: 'value' }"},{name:"Valid JSON: Complex Object",content:'{ "key": ["value", 0.5, \n\t{ "test": 56, \n\t"test2": [true, null] }\n\t]\n}'},{name:"Invalid JSON: Complex Object",content:'{ key: ["value", .5, \n\t{ "test": 56, \n\t\'test2\': [true, null] }\n\t]\n}'},{name:"Invalid JSON: With newlines",content:'{ "key": "a string\nwith a newline" }'},{name:"Invalid JSON: Floats",content:'{ "no leading zero": .13452 }'},{name:"Invalid JSON: Non-quoted keys",content:'{ "test": here, "another": test }'}],e.selectedExample=e.examples[0],e.input=e.selectedExample.content,e.doParse=function(){dJSON.parse(e.input).then(function(n){e.output=JSON.stringify(n,null,4);try{JSON.parse(e.input),e.valid=!0}catch(n){e.valid=!1}e.$apply()}).catch(function(e){alert("Error: "+e)})},e.doSelection=function(){e.input=e.selectedExample.content,e.doParse()},e.doParse()}]);
+(function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
+var dJSON = require('dirty-json');
+
+
+angular.module('djson', []).controller('DemoCtrl', ['$scope', function($scope) {
+	$scope.valid = false;
+	
+
+
+	$scope.examples = [			   
+		{"name": "Invalid JSON: embedded HTML", "content": '{ "key": "<div class="coolCSS">some text</div>" }'},
+		{"name": "Valid JSON: Simple", "content": '{ "key": "value" }'},
+		{"name": "Invalid JSON: Simple", "content": "{ key: 'value' }"},
+		{"name": "Valid JSON: Complex Object", "content": '{ "key": ["value", 0.5, \n\t{ "test": 56, \n\t"test2": [true, null] }\n\t]\n}'},
+		{"name": "Invalid JSON: Complex Object", "content": '{ key: ["value", .5, \n\t{ "test": 56, \n\t\'test2\': [true, null] }\n\t]\n}'},
+		{"name": "Invalid JSON: With newlines", "content": '{ "key": "a string\nwith a newline" }'},
+		{"name": "Invalid JSON: Floats", "content": '{ "no leading zero": .13452 }'},
+		{"name": "Invalid JSON: Non-quoted keys", "content": '{ "test": here, "another": test }'}
+	];
+	
+
+
+	$scope.selectedExample = $scope.examples[0];
+
+	$scope.input = $scope.selectedExample.content;
+
+	$scope.doParse = function() {
+		dJSON.parse($scope.input).then(function (res) {
+			$scope.output = JSON.stringify(res, null, 4);
+			try {
+				JSON.parse($scope.input);
+				$scope.valid = true;
+			} catch (e) {
+				$scope.valid = false;
+			}
+
+			$scope.$apply();
+		}).catch(function (e) {
+			alert("Error: " + e);
+		});
+	};
+
+	
+	$scope.doSelection = function () {
+		$scope.input = $scope.selectedExample.content;
+		$scope.doParse();
+	};
+
+	$scope.doParse();
+}]);
 
 },{"dirty-json":2}],2:[function(require,module,exports){
-"use strict";function parse(r,e){return parser.parse(r).catch(function(t){if(!1===e)throw console.log("throwing!!!"),t;try{var a=JSON.parse(r);return console.warn("dirty-json got valid JSON that failed with the custom parser. We're returning the valid JSON, but please file a bug report here: https://github.com/RyanMarcus/dirty-json/issues  -- the JSON that caused the failure was: "+r),a}catch(r){throw t}})}var parser=require("./parser");module.exports.parse=parse;
+// < begin copyright > 
+// Copyright Ryan Marcus 2018
+// 
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+// 
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+// 
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+// 
+// < end copyright > 
+ 
+
+
+"use strict";
+
+let parser = require('./parser');
+
+module.exports.parse = parse;
+function parse(text, fallback) {
+    try {
+        return parser.parse(text);
+    } catch (e) {
+        // our parser threw an error! see if the JSON was valid...
+        /* istanbul ignore next */
+        if (fallback === false) {
+            throw e;
+        }
+        
+        try {
+            let json = JSON.parse(text);
+            // if we didn't throw, it was valid JSON!
+            /* istanbul ignore next */
+            console.warn("dirty-json got valid JSON that failed with the custom parser. We're returning the valid JSON, but please file a bug report here: https://github.com/RyanMarcus/dirty-json/issues  -- the JSON that caused the failure was: " + text);
+
+            /* istanbul ignore next */
+            return json;
+        } catch (json_error) {
+            throw e;
+        }
+
+    }
+}
 
 },{"./parser":4}],3:[function(require,module,exports){
-"use strict";function stripslashes(e){return(e+"").replace(/\\(.?)/g,function(e,L){switch(L){case"\\":return"\\";case"0":return"\0";default:return L}})}function getLexer(e){var L=new Lexer;return L.addRule(/"((?:[^"\\]+|\\.)*)("|$)/,function(e,L){return{type:LEX_QUOTE,value:stripslashes(L)}}),L.addRule(/'((?:[^'\\]+|\\.)*)('|$)/,function(e,L){return{type:LEX_QUOTE,value:stripslashes(L)}}),L.addRule(/[\-0-9]*\.[0-9]*/,function(e){return{type:LEX_FLOAT,value:parseFloat(e)}}),L.addRule(/[\-0-9]+/,function(e){return{type:LEX_INT,value:parseInt(e)}}),lexSpc.forEach(function(e){L.addRule(e[0],function(L){return{type:e[1],value:L}})}),L.addRule(/\s/,function(e){}),L.addRule(/./,function(e){return{type:LEX_TOKEN,value:e}}),L.setInput(e),L}function lexString(e,L){for(var t=getLexer(e),r="";r=t.lex();)L(r)}function getAllTokens(e){var L=Q.defer(),t=[];return lexString(e,function(e){t.push(e)}),L.resolve(t),L.promise}var Q=require("q"),Lexer=require("lex"),LEX_KV=0,LEX_KVLIST=1,LEX_VLIST=2,LEX_BOOLEAN=3,LEX_COVALUE=4,LEX_CVALUE=5,LEX_FLOAT=6,LEX_INT=7,LEX_KEY=8,LEX_LIST=9,LEX_OBJ=10,LEX_QUOTE=11,LEX_RB=12,LEX_RCB=13,LEX_TOKEN=14,LEX_VALUE=15,LEX_COLON=-1,LEX_COMMA=-2,LEX_LCB=-3,LEX_LB=-4,LEX_DOT=-5,lexMap={":":{type:LEX_COLON},",":{type:LEX_COMMA},"{":{type:LEX_LCB},"}":{type:LEX_RCB},"[":{type:LEX_LB},"]":{type:LEX_RB},".":{type:LEX_DOT}},lexSpc=[[/:/,LEX_COLON],[/,/,LEX_COMMA],[/{/,LEX_LCB],[/}/,LEX_RCB],[/\[/,LEX_LB],[/\]/,LEX_RB],[/\./,LEX_DOT]];module.exports.lexString=lexString,module.exports.getAllTokens=getAllTokens;
+// < begin copyright > 
+// Copyright Ryan Marcus 2018
+// 
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+// 
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+// 
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+// 
+// < end copyright > 
+ 
+"use strict";
 
-},{"lex":5,"q":6}],4:[function(require,module,exports){
-"use strict";function is(e,u){return e&&e.hasOwnProperty("type")&&e.type==u}function log(e){}function parse(e){var u=Q.defer(),r=[],l=[],p=function(e){l.push(e)};try{lexer.lexString(e,p);for(var L=0;L<l.length;L++)for(log("Shifting "+l[L].type),r.push(l[L]),log(r),log("Reducing...");reduce(r);)log(r),log("Reducing...");u.resolve(compileOST(r[0]))}catch(e){u.reject(e)}return u.promise}function reduce(e){var u=e.pop();switch(u.type){case LEX_KEY:if("true"==u.value)return log("Rule 5"),e.push({type:LEX_BOOLEAN,value:"true"}),!0;if("false"==u.value)return log("Rule 6"),e.push({type:LEX_BOOLEAN,value:"false"}),!0;if("null"==u.value)return log("Rule 7"),e.push({type:LEX_VALUE,value:null}),!0;break;case LEX_TOKEN:return is(e.peek(),LEX_KEY)?(log("Rule 11a"),e.peek().value+=u.value,!0):(log("Rule 11c"),e.push({type:LEX_KEY,value:[u.value]}),!0);case LEX_INT:return is(u,LEX_INT)&&is(e.peek(),LEX_KEY)?(log("Rule 11b"),e.peek().value+=u.value,!0):(log("Rule 11f"),u.type=LEX_VALUE,e.push(u),!0);case LEX_QUOTE:return log("Rule 11d"),u.type=LEX_VALUE,u.value=u.value,e.push(u),!0;case LEX_BOOLEAN:return log("Rule 11e"),u.type=LEX_VALUE,"true"==u.value?u.value=!0:u.value=!1,e.push(u),!0;case LEX_FLOAT:return log("Rule 11g"),u.type=LEX_VALUE,e.push(u),!0;case LEX_VALUE:if(is(e.peek(),LEX_COMMA))return log("Rule 12"),u.type=LEX_CVALUE,e.pop(),e.push(u),!0;if(is(e.peek(),LEX_COLON))return log("Rule 13"),u.type=LEX_COVALUE,e.pop(),e.push(u),!0;if(is(e.peek(),LEX_KEY)&&is(e.last(1),LEX_VALUE)){log("Error rule 1");var r=e.pop();return e.peek().value+='"'+r.value+'"',e.peek().value+=u.value,!0}if(is(e.peek(),LEX_KEY)&&is(e.last(1),LEX_VLIST)){log("Error rule 2");var l=e.pop(),p=e.peek().value.pop();return p+='"'+l.value+'"',p+=u.value,e.peek().value.push(p),!0}if(is(e.peek(),LEX_KEY)&&is(e.last(1),LEX_KVLIST)){log("Error rule 3");var L=e.pop(),E=e.peek().value.pop();return E.value+='"'+L.value+'"',E.value+=u.value,e.peek().value.push(E),!0}if(is(e.peek(),LEX_KEY)){log("Error rule 4");var a=e.pop().value;return u.value=a+u.value,e.push(u),!0}break;case LEX_LIST:if(is(u,LEX_LIST)&&is(e.peek(),LEX_COMMA))return log("Rule 12a"),u.type=LEX_CVALUE,e.pop(),e.push(u),!0;if(is(e.peek(),LEX_COLON))return log("Rule 13a"),u.type=LEX_COVALUE,e.pop(),e.push(u),!0;break;case LEX_OBJ:if(is(e.peek(),LEX_COMMA)){log("Rule 12b");var t={type:LEX_CVALUE,value:u};return e.pop(),e.push(t),!0}if(is(e.peek(),LEX_COLON)){log("Rule 13b");var o={type:LEX_COVALUE,value:u};return e.pop(),e.push(o),!0}break;case LEX_CVALUE:return is(e.peek(),LEX_VLIST)?(log("Rule 14"),e.peek().value.push(u.value),!0):(log("Rule 15"),e.push({type:LEX_VLIST,value:[u.value]}),!0);case LEX_VLIST:if(is(e.peek(),LEX_VALUE))return log("Rule 15a"),u.value.unshift(e.peek().value),e.pop(),e.push(u),!0;if(is(e.peek(),LEX_LIST))return log("Rule 15b"),u.value.unshift(e.peek().value),e.pop(),e.push(u),!0;if(is(e.peek(),LEX_OBJ))return log("Rule 15c"),u.value.unshift(e.peek()),e.pop(),e.push(u),!0;if(is(e.peek(),LEX_KEY)&&(e.last(1),LEX_COMMA)){log("Error rule 7");var s=e.pop();for(e.push({type:LEX_VALUE,value:s.value}),log("Start subreduce... ("+s.value+")");reduce(e););return log("End subreduce"),e.push(u),!0}if(is(e.peek(),LEX_VLIST))return log("Error rule 8"),e.peek().value.push(u.value[0]),!0;break;case LEX_COVALUE:if(is(e.peek(),LEX_KEY)||is(e.peek(),LEX_VALUE)||is(e.peek(),LEX_VLIST)){log("Rule 16");var i=e.pop();return e.push({type:LEX_KV,key:i.value,value:u.value}),!0}throw new Error("Got a :value that can't be handled");case LEX_KV:return is(e.last(0),LEX_COMMA)&&is(e.last(1),LEX_KVLIST)?(log("Rule 17"),e.last(1).value.push(u),e.pop(),!0):(log("Rule 18"),e.push({type:LEX_KVLIST,value:[u]}),!0);case LEX_KVLIST:if(is(e.peek(),LEX_KVLIST))return log("Rule 17a"),u.value.forEach(function(u){e.peek().value.push(u)}),!0;break;case LEX_RB:if(is(e.peek(),LEX_VLIST)&&is(e.last(1),LEX_LB)){log("Rule 19");var _=e.pop();return e.pop(),e.push({type:LEX_LIST,value:_.value}),!0}if(is(e.peek(),LEX_LIST)&&is(e.last(1),LEX_LB)){log("Rule 19b");var X=e.pop();return e.pop(),e.push({type:LEX_LIST,value:[X.value]}),!0}if(is(e.peek(),LEX_LB))return log("Rule 22"),e.pop(),e.push({type:LEX_LIST,value:[]}),!0;if(is(e.peek(),LEX_VALUE)&&is(e.last(1),LEX_LB)){log("Rule 23");var n=e.pop().value;return e.pop(),e.push({type:LEX_LIST,value:[n]}),!0}if(is(e.peek(),LEX_OBJ)&&is(e.last(1),LEX_LB)){log("Rule 23b");var v=e.pop();return e.pop(),e.push({type:LEX_LIST,value:[v]}),!0}if(is(e.peek(),LEX_KEY)&&(e.last(1),LEX_COMMA)){log("Error rule 5");var f=e.pop();for(e.push({type:LEX_VALUE,value:f.value}),log("Start subreduce... ("+f.value+")");reduce(e););return log("End subreduce"),e.push({type:LEX_RB}),!0}break;case LEX_RCB:if(is(e.peek(),LEX_KVLIST)&&(e.last(1),LEX_LCB)){log("Rule 20");var h=e.pop();return e.pop(),e.push({type:LEX_OBJ,value:h.value}),!0}if(is(e.peek(),LEX_LCB))return log("Rule 21"),e.pop(),e.push({type:LEX_OBJ,value:null}),!0;if(is(e.peek(),LEX_KEY)&&(e.last(1),LEX_COLON)){log("Error rule 4");var g=e.pop();for(e.push({type:LEX_VALUE,value:g.value}),log("Start subreduce... ("+g.value+")");reduce(e););return log("End subreduce"),e.push({type:LEX_RCB}),!0}throw new Error("Found } that I can't handle.");case LEX_COMMA:if(is(e.peek(),LEX_COMMA))return log("Comma error rule"),!0}return e.push(u),!1}function compileOST(e){if(-1!=["boolean","number","string"].indexOf(void 0===e?"undefined":_typeof(e)))return e;if(null===e)return null;if(Array.isArray(e)){for(var u=[];e.length>0;)u.unshift(compileOST(e.pop()));return u}if(is(e,LEX_OBJ)){var r={};return null===e.value?{}:(e.value.forEach(function(e){r[e.key]=compileOST(e.value)}),r)}return is(e,LEX_LIST)?compileOST(e.value):e.value}var _typeof="function"==typeof Symbol&&"symbol"==typeof Symbol.iterator?function(e){return typeof e}:function(e){return e&&"function"==typeof Symbol&&e.constructor===Symbol&&e!==Symbol.prototype?"symbol":typeof e},lexer=require("./lexer"),Q=require("q"),LEX_KV=0,LEX_KVLIST=1,LEX_VLIST=2,LEX_BOOLEAN=3,LEX_COVALUE=4,LEX_CVALUE=5,LEX_FLOAT=6,LEX_INT=7,LEX_KEY=8,LEX_LIST=9,LEX_OBJ=10,LEX_QUOTE=11,LEX_RB=12,LEX_RCB=13,LEX_TOKEN=14,LEX_VALUE=15,LEX_COLON=-1,LEX_COMMA=-2,LEX_LCB=-3,LEX_LB=-4,LEX_DOT=-5;Array.prototype.peek=function(){return this[this.length-1]},Array.prototype.last=function(e){return this[this.length-(1+e)]},module.exports.parse=parse;
+const Lexer = require("lex");
+const unescapeJs = require("unescape-js");
+const utf8 = require("utf8");
 
-},{"./lexer":3,"q":6}],5:[function(require,module,exports){
-"use strict";function Lexer(t){function e(){for(var t=[],e=0,i=this.state,r=this.index,o=this.input,s=0,l=n.length;s<l;s++){var h=n[s],c=h.start,a=c.length;if(!a||c.indexOf(i)>=0||i%2&&1===a&&!c[0]){var f=h.pattern;f.lastIndex=r;var u=f.exec(o);if(u&&u.index===r){var p=t.push({result:u,action:h.action,length:u[0].length});for(h.global&&(e=p);--p>e;){var d=p-1;if(t[p].length>t[d].length){var x=t[p];t[p]=t[d],t[d]=x}}}}}return t}"function"!=typeof t&&(t=Lexer.defunct);var i=[],n=[],r=0;this.state=0,this.index=0,this.input="",this.addRule=function(t,e,i){var r=t.global;if(!r){var o="g";t.multiline&&(o+="m"),t.ignoreCase&&(o+="i"),t=new RegExp(t.source,o)}return"[object Array]"!==Object.prototype.toString.call(i)&&(i=[0]),n.push({pattern:t,global:r,action:e,start:i}),this},this.setInput=function(t){return r=0,this.state=0,this.index=0,i.length=0,this.input=t,this},this.lex=function(){if(i.length)return i.shift();for(this.reject=!0;this.index<=this.input.length;){for(var n=e.call(this).splice(r),o=this.index;n.length&&this.reject;){var s=n.shift(),l=s.result,h=s.length;this.index+=h,this.reject=!1,r++;var c=s.action.apply(this,l);if(this.reject)this.index=l.index;else if(void 0!==c)switch(Object.prototype.toString.call(c)){case"[object Array]":i=c.slice(1),c=c[0];default:return h&&(r=0),c}}var a=this.input;if(o<a.length)if(this.reject){r=0;var c=t.call(this,a.charAt(this.index++));if(void 0!==c)return"[object Array]"===Object.prototype.toString.call(c)?(i=c.slice(1),c[0]):c}else this.index!==o&&(r=0),this.reject=!0;else{if(!n.length)break;this.reject=!0}}}}var _typeof="function"==typeof Symbol&&"symbol"==typeof Symbol.iterator?function(t){return typeof t}:function(t){return t&&"function"==typeof Symbol&&t.constructor===Symbol&&t!==Symbol.prototype?"symbol":typeof t};"object"===("undefined"==typeof module?"undefined":_typeof(module))&&"object"===_typeof(module.exports)&&(module.exports=Lexer),Lexer.defunct=function(t){throw new Error("Unexpected character at index "+(this.index-1)+": "+t)};
+// terminals
+const LEX_KV = 0;
+const LEX_KVLIST = 1;
+const LEX_VLIST = 2;
+const LEX_BOOLEAN = 3;
+const LEX_COVALUE = 4;
+const LEX_CVALUE = 5;
+const LEX_FLOAT = 6;
+const LEX_INT = 7;
+const LEX_KEY = 8;
+const LEX_LIST = 9;
+const LEX_OBJ = 10;
+const LEX_QUOTE = 11;
+const LEX_RB = 12;
+const LEX_RCB = 13;
+const LEX_TOKEN = 14;
+const LEX_VALUE = 15;
+
+// non-terminals
+const LEX_COLON = -1;
+const LEX_COMMA = -2;
+const LEX_LCB = -3;
+const LEX_LB = -4;
+const LEX_DOT = -5;
+
+
+const lexMap = {
+    ":": {type: LEX_COLON},
+    ",": {type: LEX_COMMA},
+    "{": {type: LEX_LCB},
+    "}": {type: LEX_RCB},
+    "[": {type: LEX_LB},
+    "]": {type: LEX_RB},
+    ".": {type: LEX_DOT} // TODO: remove?
+};
+
+const lexSpc = [
+    [/:/, LEX_COLON],
+    [/,/, LEX_COMMA],
+    [/{/, LEX_LCB],
+    [/}/, LEX_RCB],
+    [/\[/, LEX_LB],
+    [/\]/, LEX_RB],
+    [/\./, LEX_DOT] // TODO: remove?
+];
+
+function parseString(str) {
+    // unescape-js doesn't cover the \/ case, but we will here.
+    str = str.replace(/\\\//, '/');
+    return unescapeJs(str);
+}
+
+
+function getLexer(string) {
+    let lexer = new Lexer();
+
+    let col = 0;
+    let row = 0;
+    
+    lexer.addRule(/"((?:\\.|[^"])*)($|")/, (lexeme, txt) => {
+        col += lexeme.length;
+        return {type: LEX_QUOTE, value: parseString(txt), row, col};
+    });
+
+    lexer.addRule(/'((?:\\.|[^'])*)($|')/, (lexeme, txt) => {
+        col += lexeme.length;
+        return {type: LEX_QUOTE, value: parseString(txt), row, col};
+    });
+
+    // floats with a dot
+    lexer.addRule(/[\-0-9]*\.[0-9]*([eE][\+\-]?)?[0-9]*/, lexeme => {
+        col += lexeme.length;
+        return {type: LEX_FLOAT, value: parseFloat(lexeme), row, col};
+    });
+
+    // floats without a dot but with e notation
+    lexer.addRule(/\-?[0-9]+([eE][\+\-]?)[0-9]*/, lexeme => {
+        col += lexeme.length;
+        return {type: LEX_FLOAT, value: parseFloat(lexeme), row, col};
+    });
+    
+    lexer.addRule(/\-?[0-9]+/, lexeme => {
+        col += lexeme.length;
+        return {type: LEX_INT, value: parseInt(lexeme), row, col};
+    });
+
+    lexSpc.forEach(item => {
+        lexer.addRule(item[0], lexeme => {
+            col += lexeme.length;
+            return {type: item[1], value: lexeme, row, col};
+        });
+    });
+
+    lexer.addRule(/\s/, lexeme => {
+        // chomp whitespace...
+        if (lexeme == "\n") {
+            col = 0;
+            row++;
+        } else {
+            col += lexeme.length;
+        }
+    });
+
+    lexer.addRule(/./, lexeme => {
+        col += lexeme.length;
+        
+        let lt = LEX_TOKEN;
+        let val = lexeme;
+
+        return {type: lt, value: val, row, col};
+    });
+
+    lexer.setInput(string);
+
+    return lexer;
+}
+
+
+
+module.exports.lexString = lexString;
+function lexString(str, emit) {
+    let lex = getLexer(str);
+
+    let token = "";
+    while ((token = lex.lex())) {
+        emit(token);
+    }
+    
+}
+
+module.exports.getAllTokens = getAllTokens;
+function getAllTokens(str) {
+    let arr = [];
+    let emit = function (i) {
+        arr.push(i);
+    };
+
+    lexString(str, emit);
+
+    return arr;
+}
+
+
+
+
+},{"lex":5,"unescape-js":7,"utf8":8}],4:[function(require,module,exports){
+// < begin copyright > 
+// Copyright Ryan Marcus 2018
+// 
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+// 
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+// 
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+// 
+// < end copyright > 
+ 
+"use strict";
+
+let lexer = require("./lexer");
+
+// terminals
+const LEX_KV = 0;
+const LEX_KVLIST = 1;
+const LEX_VLIST = 2;
+const LEX_BOOLEAN = 3;
+const LEX_COVALUE = 4;
+const LEX_CVALUE = 5;
+const LEX_FLOAT = 6;
+const LEX_INT = 7;
+const LEX_KEY = 8;
+const LEX_LIST = 9;
+const LEX_OBJ = 10;
+const LEX_QUOTE = 11;
+const LEX_RB = 12;
+const LEX_RCB = 13;
+const LEX_TOKEN = 14;
+const LEX_VALUE = 15;
+
+// non-terminals
+const LEX_COLON = -1;
+const LEX_COMMA = -2;
+const LEX_LCB = -3;
+const LEX_LB = -4;
+const LEX_DOT = -5;
+
+
+Array.prototype.peek = function() {
+    return this[this.length - 1];
+};
+
+Array.prototype.last = function(i) {
+    return this[this.length - (1 + i)];
+};
+
+
+function is(obj, prop) {
+    return (obj && obj.hasOwnProperty("type") && obj.type == prop);
+}
+
+function log(str) {
+    //console.log(str);
+}
+
+
+
+module.exports.parse = parse;
+function parse(text) {
+    let stack = [];
+
+    let tokens = [];
+    let emit = function(t) {
+        tokens.push(t);
+    };
+
+
+    lexer.lexString(text, emit);
+
+
+    for (let i = 0; i < tokens.length; i++) {
+        log("Shifting " + tokens[i].type);
+        stack.push(tokens[i]);
+        log(stack);
+        log("Reducing...");
+        while (reduce(stack)) {
+            log(stack);
+            log("Reducing...");
+        }
+        
+    }
+
+    return compileOST(stack[0]);
+
+}
+
+function reduce(stack) {
+    let next = stack.pop();
+
+    switch(next.type) {
+    case LEX_KEY:
+        if (next.value == "true") {
+            log("Rule 5");
+            stack.push({'type': LEX_BOOLEAN, 'value': "true"});
+            return true;
+        }
+
+
+        if (next.value == "false") {
+            log("Rule 6");
+            stack.push({'type': LEX_BOOLEAN, 'value': "false"});
+            return true;
+        }
+
+        if (next.value == "null") {
+            log("Rule 7");
+            stack.push({'type': LEX_VALUE, 'value': null});
+            return true;
+        }
+        break;
+
+    case LEX_TOKEN:
+        if (is(stack.peek(), LEX_KEY)) {
+            log("Rule 11a");
+            stack.peek().value += next.value;
+            return true;
+        }
+
+        log("Rule 11c");
+        stack.push({type: LEX_KEY, value: next.value });
+        return true;
+
+
+    case LEX_INT:
+        if (is(next, LEX_INT) && is(stack.peek(), LEX_KEY)) {
+            log("Rule 11b");
+            stack.peek().value += next.value;
+            return true;
+        }
+
+        log("Rule 11f");
+        next.type = LEX_VALUE;
+        stack.push(next);
+        return true;
+
+
+    case LEX_QUOTE:
+        log("Rule 11d");
+        next.type = LEX_VALUE;
+        next.value = next.value;
+        stack.push(next);
+        return true;
+
+
+    case LEX_BOOLEAN:
+        log("Rule 11e");
+        next.type = LEX_VALUE;
+
+        if (next.value == "true") {
+            next.value = true;
+        } else {
+            next.value = false;
+        }
+
+        stack.push(next);
+        return true;
+
+
+    case LEX_FLOAT:
+        log("Rule 11g");
+        next.type = LEX_VALUE;
+        stack.push(next);
+        return true;
+
+    case LEX_VALUE:
+        if (is(stack.peek(), LEX_COMMA)) {
+            log("Rule 12");
+            next.type = LEX_CVALUE;
+            stack.pop();
+            stack.push(next);
+            return true;
+        }
+
+        if (is(stack.peek(), LEX_COLON)) {
+            log("Rule 13");
+            next.type = LEX_COVALUE;
+            stack.pop();
+            stack.push(next);
+            return true;
+        }
+
+        if (is(stack.peek(), LEX_KEY) && is(stack.last(1), LEX_VALUE)) {
+            log("Error rule 1");
+            let middleVal = stack.pop();
+            stack.peek().value += '"' + middleVal.value + '"';
+            stack.peek().value += next.value;
+            return true;
+        }
+
+        if (is(stack.peek(), LEX_KEY) && is(stack.last(1), LEX_VLIST)) {
+            log("Error rule 2");
+            let middleVal = stack.pop();
+            let oldLastVal = stack.peek().value.pop();
+            oldLastVal +=  '"' + middleVal.value + '"';
+            oldLastVal += next.value;
+            
+            stack.peek().value.push(oldLastVal);
+            
+            return true;
+        }
+
+        if (is(stack.peek(), LEX_KEY) && is(stack.last(1), LEX_KVLIST)) {
+            log("Error rule 3");
+            let middleVal = stack.pop();
+            let oldLastVal = stack.peek().value.pop();
+            oldLastVal.value +=  '"' + middleVal.value + '"';
+            oldLastVal.value += next.value;
+            
+            stack.peek().value.push(oldLastVal);
+            
+            return true;
+        }
+
+        if (is(stack.peek(), LEX_KEY)) {
+            log("Error rule 4");
+            let keyValue = stack.pop().value;
+            next.value = keyValue + next.value;
+            stack.push(next);
+            return true;
+        }
+
+        break;
+
+    case LEX_LIST:
+        if (is(next, LEX_LIST) && is(stack.peek(), LEX_COMMA)) {
+            log("Rule 12a");
+            next.type = LEX_CVALUE;
+            stack.pop();
+            stack.push(next);
+            return true;
+        }
+
+        if (is(stack.peek(), LEX_COLON)) {
+            log("Rule 13a");
+            next.type = LEX_COVALUE;
+            stack.pop();
+            stack.push(next);
+            return true;
+        }
+        break;
+
+    case LEX_OBJ:
+        if (is(stack.peek(), LEX_COMMA)) {
+            log("Rule 12b");
+            let toPush = {'type': LEX_CVALUE, 'value': next};
+            stack.pop();
+            stack.push(toPush);
+            return true;
+        }
+
+        if (is(stack.peek(), LEX_COLON)) {
+            log("Rule 13b");
+            let toPush = {'type': LEX_COVALUE, 'value': next};
+            stack.pop();
+            stack.push(toPush);
+            return true;
+        }
+        break;
+
+    case LEX_CVALUE:
+        if (is(stack.peek(), LEX_VLIST)) {
+            log("Rule 14");
+            stack.peek().value.push(next.value);
+            return true;
+        }
+
+
+        log("Rule 15");
+        stack.push({'type': LEX_VLIST, 'value': [next.value]});
+        return true;
+
+    case LEX_VLIST:
+        if (is(stack.peek(), LEX_VALUE)) {
+            log("Rule 15a");
+            next.value.unshift(stack.peek().value);
+            stack.pop();
+            stack.push(next);
+            return true;
+        }
+
+        if (is(stack.peek(), LEX_LIST)) {
+            log("Rule 15b");
+            next.value.unshift(stack.peek().value);
+            stack.pop();
+            stack.push(next);
+            return true;
+        }
+
+        if (is(stack.peek(), LEX_OBJ)) {
+            log("Rule 15c");
+            next.value.unshift(stack.peek());
+            stack.pop();
+            stack.push(next);
+            return true;
+        }
+
+        if (is(stack.peek(), LEX_KEY) && (stack.last(1), LEX_COMMA)) {
+            log("Error rule 7");
+            let l = stack.pop();
+            stack.push({type: LEX_VALUE, 'value': l.value});
+            log("Start subreduce... (" + l.value + ")");
+            while(reduce(stack));
+            log("End subreduce");
+            stack.push(next);
+
+            return true;
+        }
+
+        if (is(stack.peek(), LEX_VLIST)) {
+            log("Error rule 8");
+            stack.peek().value.push(next.value[0]);
+            return true;
+        }
+        break;
+
+    case LEX_COVALUE:
+
+        if (is(stack.peek(), LEX_KEY) || is(stack.peek(), LEX_VALUE) || is(stack.peek(), LEX_VLIST)) {
+            log("Rule 16");
+            let key = stack.pop();
+            stack.push({'type': LEX_KV, 'key': key.value, 'value': next.value});
+            return true;
+        }
+
+
+        throw new Error("Got a :value that can't be handled at line " +
+                       next.row + ":" + next.col);
+
+    case LEX_KV:
+        if (is(stack.last(0), LEX_COMMA) && is(stack.last(1), LEX_KVLIST)) {
+            log("Rule 17");
+            stack.last(1).value.push(next);
+            stack.pop();
+            return true;
+        }
+
+
+
+
+        log("Rule 18");
+        stack.push({'type': LEX_KVLIST, 'value': [next]});
+        return true;
+
+
+    case LEX_KVLIST:
+        if (is(stack.peek(), LEX_KVLIST)) {
+            log("Rule 17a");
+            next.value.forEach(function (i) {
+                stack.peek().value.push(i);
+            });
+            
+            return true;
+        }
+
+
+        break;
+
+    case LEX_RB:
+        if (is(stack.peek(), LEX_VLIST) && is(stack.last(1), LEX_LB)) {
+            log("Rule 19");
+            let l = stack.pop();
+            stack.pop();
+            stack.push({'type': LEX_LIST, 'value': l.value});
+            return true;
+        }
+
+        if (is(stack.peek(), LEX_LIST) && is(stack.last(1), LEX_LB)) {
+            log("Rule 19b");
+            let l = stack.pop();
+            stack.pop();
+            stack.push({'type': LEX_LIST, 'value': [l.value]});
+            return true;
+        }
+
+        if (is(stack.peek(), LEX_LB)) {
+            log("Rule 22");
+            stack.pop();
+            stack.push({type: LEX_LIST, 'value': []});
+            return true;
+        }
+
+        if (is(stack.peek(), LEX_VALUE) && is(stack.last(1), LEX_LB)) {
+            log("Rule 23");
+            let val = stack.pop().value;
+            stack.pop();
+            stack.push({type: LEX_LIST, 'value': [val]});
+            return true;
+        }
+
+        if (is(stack.peek(), LEX_OBJ) && is(stack.last(1), LEX_LB)) {
+            log("Rule 23b");
+            let val = stack.pop();
+            stack.pop();
+            stack.push({type: LEX_LIST, 'value': [val]});
+            return true;
+        }
+
+        if (is(stack.peek(), LEX_KEY) && is(stack.last(1), LEX_COMMA)) {
+            log("Error rule 5");
+            let l = stack.pop();
+            stack.push({type: LEX_VALUE, 'value': l.value});
+            log("Start subreduce... (" + l.value + ")");
+            while(reduce(stack));
+            log("End subreduce");
+            stack.push({type: LEX_RB});
+            return true;
+        }
+
+        
+        if (is(stack.peek(), LEX_COMMA) && (
+            is(stack.last(1), LEX_KEY)
+                || is(stack.last(1), LEX_OBJ)
+                || is(stack.last(1), LEX_VALUE))
+           ) {
+            log("Error rule 5a");
+            stack.pop();
+            //let l = stack.pop();
+            //stack.push({type: LEX_VALUE, 'value': l.value});
+            stack.push({type: LEX_RB, 'value': ']'});
+            log("Start subreduce...");
+            log("Content: " + JSON.stringify(stack));
+            while(reduce(stack));
+            log("End subreduce");
+
+            return true;
+        }
+
+        if (is(stack.peek(), LEX_KEY) && is(stack.last(1), LEX_LB)) {
+            log("Error rule 5b");
+            let v = stack.pop();
+            stack.pop();
+            stack.push({type: LEX_LIST, value: [v.value]});
+            return true;
+        }
+
+        if (is(stack.peek(), LEX_COMMA) && is(stack.last(1), LEX_VLIST)) {
+            log("Error rule 5c");
+            stack.pop();
+            stack.push({type: LEX_RB});
+            log("Start subreduce...");
+            log("Content: " + JSON.stringify(stack));
+            while(reduce(stack));
+            log("End subreduce");
+
+            return true;
+        }
+
+        break;
+
+    case LEX_RCB:
+        if (is(stack.peek(), LEX_KVLIST) && is(stack.last(1), LEX_LCB)) {
+            log("Rule 20");
+            let l = stack.pop();
+            stack.pop();
+            stack.push({'type': LEX_OBJ, 'value': l.value});
+            return true;
+        }
+
+        if (is(stack.peek(), LEX_LCB)) {
+            log("Rule 21");
+            stack.pop();
+            stack.push({type: LEX_OBJ, 'value': null});
+            return true;
+        }
+
+        if (is(stack.peek(), LEX_KEY) && is(stack.last(1), LEX_COLON)) {
+            log("Error rule 4");
+            let l = stack.pop();
+            //stack.pop();
+            stack.push({type: LEX_VALUE, 'value': l.value});
+            log("Start subreduce... (" + l.value + ")");
+            while(reduce(stack));
+            log("End subreduce");
+            stack.push({type: LEX_RCB});
+            return true;
+        }
+
+        throw new Error("Found } that I can't handle at line " +
+                        next.row + ":" + next.col);
+
+        
+    case LEX_COMMA:
+        if (is(stack.peek(), LEX_COMMA)) {
+            log("Comma error rule 1");
+            // do nothing -- so don't push the extra comma onto the stack
+            return true;
+        }
+    }
+
+
+    stack.push(next);
+    return false;
+}
+
+
+
+function compileOST(tree) {
+    let rawTypes = ["boolean", "number", "string"];
+
+    if (rawTypes.indexOf((typeof tree)) != -1)
+        return tree;
+
+    if (tree === null)
+        return null;
+
+    if (Array.isArray(tree)) {
+        let toR = [];
+        while (tree.length > 0)
+            toR.unshift(compileOST(tree.pop()));
+        return toR;
+    }
+    
+
+    if (is(tree, LEX_OBJ)) {
+        let toR = {};
+        if (tree.value === null)
+            return {};
+        tree.value.forEach(function (i) {
+            toR[i.key] = compileOST(i.value);
+        });
+        return toR;
+    }
+
+    if (is(tree, LEX_LIST)) {
+        return compileOST(tree.value);
+    }
+
+    // it must be a value
+    return tree.value;
+}
+
+
+},{"./lexer":3}],5:[function(require,module,exports){
+if (typeof module === "object" && typeof module.exports === "object") module.exports = Lexer;
+
+Lexer.defunct = function (chr) {
+    throw new Error("Unexpected character at index " + (this.index - 1) + ": " + chr);
+};
+
+function Lexer(defunct) {
+    if (typeof defunct !== "function") defunct = Lexer.defunct;
+
+    var tokens = [];
+    var rules = [];
+    var remove = 0;
+    this.state = 0;
+    this.index = 0;
+    this.input = "";
+
+    this.addRule = function (pattern, action, start) {
+        var global = pattern.global;
+
+        if (!global) {
+            var flags = "g";
+            if (pattern.multiline) flags += "m";
+            if (pattern.ignoreCase) flags += "i";
+            pattern = new RegExp(pattern.source, flags);
+        }
+
+        if (Object.prototype.toString.call(start) !== "[object Array]") start = [0];
+
+        rules.push({
+            pattern: pattern,
+            global: global,
+            action: action,
+            start: start
+        });
+
+        return this;
+    };
+
+    this.setInput = function (input) {
+        remove = 0;
+        this.state = 0;
+        this.index = 0;
+        tokens.length = 0;
+        this.input = input;
+        return this;
+    };
+
+    this.lex = function () {
+        if (tokens.length) return tokens.shift();
+
+        this.reject = true;
+
+        while (this.index <= this.input.length) {
+            var matches = scan.call(this).splice(remove);
+            var index = this.index;
+
+            while (matches.length) {
+                if (this.reject) {
+                    var match = matches.shift();
+                    var result = match.result;
+                    var length = match.length;
+                    this.index += length;
+                    this.reject = false;
+                    remove++;
+
+                    var token = match.action.apply(this, result);
+                    if (this.reject) this.index = result.index;
+                    else if (typeof token !== "undefined") {
+                        switch (Object.prototype.toString.call(token)) {
+                        case "[object Array]":
+                            tokens = token.slice(1);
+                            token = token[0];
+                        default:
+                            if (length) remove = 0;
+                            return token;
+                        }
+                    }
+                } else break;
+            }
+
+            var input = this.input;
+
+            if (index < input.length) {
+                if (this.reject) {
+                    remove = 0;
+                    var token = defunct.call(this, input.charAt(this.index++));
+                    if (typeof token !== "undefined") {
+                        if (Object.prototype.toString.call(token) === "[object Array]") {
+                            tokens = token.slice(1);
+                            return token[0];
+                        } else return token;
+                    }
+                } else {
+                    if (this.index !== index) remove = 0;
+                    this.reject = true;
+                }
+            } else if (matches.length)
+                this.reject = true;
+            else break;
+        }
+    };
+
+    function scan() {
+        var matches = [];
+        var index = 0;
+
+        var state = this.state;
+        var lastIndex = this.index;
+        var input = this.input;
+
+        for (var i = 0, length = rules.length; i < length; i++) {
+            var rule = rules[i];
+            var start = rule.start;
+            var states = start.length;
+
+            if ((!states || start.indexOf(state) >= 0) ||
+                (state % 2 && states === 1 && !start[0])) {
+                var pattern = rule.pattern;
+                pattern.lastIndex = lastIndex;
+                var result = pattern.exec(input);
+
+                if (result && result.index === lastIndex) {
+                    var j = matches.push({
+                        result: result,
+                        action: rule.action,
+                        length: result[0].length
+                    });
+
+                    if (rule.global) index = j;
+
+                    while (--j > index) {
+                        var k = j - 1;
+
+                        if (matches[j].length > matches[k].length) {
+                            var temple = matches[j];
+                            matches[j] = matches[k];
+                            matches[k] = temple;
+                        }
+                    }
+                }
+            }
+        }
+
+        return matches;
+    }
+}
 
 },{}],6:[function(require,module,exports){
-(function (process){
-"use strict";var _typeof="function"==typeof Symbol&&"symbol"==typeof Symbol.iterator?function(t){return typeof t}:function(t){return t&&"function"==typeof Symbol&&t.constructor===Symbol&&t!==Symbol.prototype?"symbol":typeof t};!function(t){if("function"==typeof bootstrap)bootstrap("promise",t);else if("object"===("undefined"==typeof exports?"undefined":_typeof(exports))&&"object"===("undefined"==typeof module?"undefined":_typeof(module)))module.exports=t();else if("function"==typeof define&&define.amd)define(t);else if("undefined"!=typeof ses){if(!ses.ok())return;ses.makeQ=t}else{if("undefined"==typeof window&&"undefined"==typeof self)throw new Error("This environment was not anticipated by Q. Please file a bug.");var n="undefined"!=typeof window?window:self,e=n.Q;n.Q=t(),n.Q.noConflict=function(){return n.Q=e,this}}}(function(){function t(t){return function(){return q.apply(t,arguments)}}function n(t){return t===Object(t)}function e(t){return"[object StopIteration]"===nt(t)||t instanceof V}function r(t,n){if(B&&n.stack&&"object"===(void 0===t?"undefined":_typeof(t))&&null!==t&&t.stack){for(var e=[],r=n;r;r=r.source)r.stack&&(!t.__minimumStackCounter__||t.__minimumStackCounter__>r.stackCounter)&&(Y(t,"__minimumStackCounter__",{value:r.stackCounter,configurable:!0}),e.unshift(r.stack));e.unshift(t.stack);var i=e.join("\n"+et+"\n"),u=o(i);Y(t,"stack",{value:u,configurable:!0})}}function o(t){for(var n=t.split("\n"),e=[],r=0;r<n.length;++r){var o=n[r];c(o)||i(o)||!o||e.push(o)}return e.join("\n")}function i(t){return-1!==t.indexOf("(module.js:")||-1!==t.indexOf("(node.js:")}function u(t){var n=/at .+ \((.+):(\d+):(?:\d+)\)$/.exec(t);if(n)return[n[1],Number(n[2])];var e=/at ([^ ]+):(\d+):(?:\d+)$/.exec(t);if(e)return[e[1],Number(e[2])];var r=/.*@(.+):(\d+)$/.exec(t);return r?[r[1],Number(r[2])]:void 0}function c(t){var n=u(t);if(!n)return!1;var e=n[0],r=n[1];return e===$&&r>=G&&r<=ft}function f(){if(B)try{throw new Error}catch(r){var t=r.stack.split("\n"),n=t[0].indexOf("@")>0?t[1]:t[2],e=u(n);if(!e)return;return $=e[0],e[1]}}function s(t){return t instanceof d?t:m(t)?S(t):R(t)}function p(){function t(t){n=t,s.longStackSupport&&B&&(i.source=t),J(e,function(n,e){s.nextTick(function(){t.promiseDispatch.apply(t,e)})},void 0),e=void 0,r=void 0}var n,e=[],r=[],o=X(p.prototype),i=X(d.prototype);if(i.promiseDispatch=function(t,o,i){var u=z(arguments);e?(e.push(u),"when"===o&&i[1]&&r.push(i[1])):s.nextTick(function(){n.promiseDispatch.apply(n,u)})},i.valueOf=function(){if(e)return i;var t=h(n);return v(t)&&(n=t),t},i.inspect=function(){return n?n.inspect():{state:"pending"}},s.longStackSupport&&B)try{throw new Error}catch(t){i.stack=t.stack.substring(t.stack.indexOf("\n")+1),i.stackCounter=rt++}return o.promise=i,o.resolve=function(e){n||t(s(e))},o.fulfill=function(e){n||t(R(e))},o.reject=function(e){n||t(T(e))},o.notify=function(t){n||J(r,function(n,e){s.nextTick(function(){e(t)})},void 0)},o}function a(t){if("function"!=typeof t)throw new TypeError("resolver must be a function.");var n=p();try{t(n.resolve,n.reject,n.notify)}catch(t){n.reject(t)}return n.promise}function l(t){return a(function(n,e){for(var r=0,o=t.length;r<o;r++)s(t[r]).then(n,e)})}function d(t,n,e){void 0===n&&(n=function(t){return T(new Error("Promise does not support operation: "+t))}),void 0===e&&(e=function(){return{state:"unknown"}});var r=X(d.prototype);if(r.promiseDispatch=function(e,o,i){var u;try{u=t[o]?t[o].apply(r,i):n.call(r,o,i)}catch(t){u=T(t)}e&&e(u)},r.inspect=e,e){var o=e();"rejected"===o.state&&(r.exception=o.reason),r.valueOf=function(){var t=e();return"pending"===t.state||"rejected"===t.state?r:t.value}}return r}function y(t,n,e,r){return s(t).then(n,e,r)}function h(t){if(v(t)){var n=t.inspect();if("fulfilled"===n.state)return n.value}return t}function v(t){return t instanceof d}function m(t){return n(t)&&"function"==typeof t.then}function k(t){return v(t)&&"pending"===t.inspect().state}function w(t){return!v(t)||"fulfilled"===t.inspect().state}function j(t){return v(t)&&"rejected"===t.inspect().state}function b(){ot.length=0,it.length=0,ct||(ct=!0)}function g(t,n){ct&&("object"===("undefined"==typeof process?"undefined":_typeof(process))&&"function"==typeof process.emit&&s.nextTick.runAfter(function(){-1!==K(it,t)&&(process.emit("unhandledRejection",n,t),ut.push(t))}),it.push(t),n&&void 0!==n.stack?ot.push(n.stack):ot.push("(no stack) "+n))}function x(t){if(ct){var n=K(it,t);-1!==n&&("object"===("undefined"==typeof process?"undefined":_typeof(process))&&"function"==typeof process.emit&&s.nextTick.runAfter(function(){var e=K(ut,t);-1!==e&&(process.emit("rejectionHandled",ot[n],t),ut.splice(e,1))}),it.splice(n,1),ot.splice(n,1))}}function T(t){var n=d({when:function(n){return n&&x(this),n?n(t):this}},function(){return this},function(){return{state:"rejected",reason:t}});return g(n,t),n}function R(t){return d({when:function(){return t},get:function(n){return t[n]},set:function(n,e){t[n]=e},delete:function(n){delete t[n]},post:function(n,e){return null===n||void 0===n?t.apply(void 0,e):t[n].apply(t,e)},apply:function(n,e){return t.apply(n,e)},keys:function(){return tt(t)}},void 0,function(){return{state:"fulfilled",value:t}})}function S(t){var n=p();return s.nextTick(function(){try{t.then(n.resolve,n.reject,n.notify)}catch(t){n.reject(t)}}),n.promise}function _(t){return d({isDef:function(){}},function(n,e){return P(t,n,e)},function(){return s(t).inspect()})}function E(t,n,e){return s(t).spread(n,e)}function O(t){return function(){function n(t,n){var u;if("undefined"==typeof StopIteration){try{u=r[t](n)}catch(t){return T(t)}return u.done?s(u.value):y(u.value,o,i)}try{u=r[t](n)}catch(t){return e(t)?s(t.value):T(t)}return y(u,o,i)}var r=t.apply(this,arguments),o=n.bind(n,"next"),i=n.bind(n,"throw");return o()}}function C(t){s.done(s.async(t)())}function Q(t){throw new V(t)}function N(t){return function(){return E([this,D(arguments)],function(n,e){return t.apply(n,e)})}}function P(t,n,e){return s(t).dispatch(n,e)}function D(t){return y(t,function(t){var n=0,e=p();return J(t,function(r,o,i){var u;v(o)&&"fulfilled"===(u=o.inspect()).state?t[i]=u.value:(++n,y(o,function(r){t[i]=r,0==--n&&e.resolve(t)},e.reject,function(t){e.notify({index:i,value:t})}))},void 0),0===n&&e.resolve(t),e.promise})}function A(t){if(0===t.length)return s.resolve();var n=s.defer(),e=0;return J(t,function(r,o,i){function u(t){n.resolve(t)}function c(t){0===--e&&(t.message="Q can't get fulfillment value from any promise, all promises were rejected. Last error message: "+t.message,n.reject(t))}function f(t){n.notify({index:i,value:t})}var s=t[i];e++,y(s,u,c,f)},void 0),n.promise}function I(t){return y(t,function(t){return t=W(t,s),y(D(W(t,function(t){return y(t,H,H)})),function(){return t})})}function U(t){return s(t).allSettled()}function F(t,n){return s(t).then(void 0,void 0,n)}function M(t,n){return s(t).nodeify(n)}var B=!1;try{throw new Error}catch(t){B=!!t.stack}var $,V,G=f(),H=function(){},L=function(){function t(){for(var t,r;e.next;)e=e.next,t=e.task,e.task=void 0,r=e.domain,r&&(e.domain=void 0,r.enter()),n(t,r);for(;c.length;)t=c.pop(),n(t);o=!1}function n(n,e){try{n()}catch(n){if(u)throw e&&e.exit(),setTimeout(t,0),e&&e.enter(),n;setTimeout(function(){throw n},0)}e&&e.exit()}var e={task:void 0,next:null},r=e,o=!1,i=void 0,u=!1,c=[];if(L=function(t){r=r.next={task:t,domain:u&&process.domain,next:null},o||(o=!0,i())},"object"===("undefined"==typeof process?"undefined":_typeof(process))&&"[object process]"===process.toString()&&process.nextTick)u=!0,i=function(){process.nextTick(t)};else if("function"==typeof setImmediate)i="undefined"!=typeof window?setImmediate.bind(window,t):function(){setImmediate(t)};else if("undefined"!=typeof MessageChannel){var f=new MessageChannel;f.port1.onmessage=function(){i=s,f.port1.onmessage=t,t()};var s=function(){f.port2.postMessage(0)};i=function(){setTimeout(t,0),s()}}else i=function(){setTimeout(t,0)};return L.runAfter=function(t){c.push(t),o||(o=!0,i())},L}(),q=Function.call,z=t(Array.prototype.slice),J=t(Array.prototype.reduce||function(t,n){var e=0,r=this.length;if(1===arguments.length)for(;;){if(e in this){n=this[e++];break}if(++e>=r)throw new TypeError}for(;e<r;e++)e in this&&(n=t(n,this[e],e));return n}),K=t(Array.prototype.indexOf||function(t){for(var n=0;n<this.length;n++)if(this[n]===t)return n;return-1}),W=t(Array.prototype.map||function(t,n){var e=this,r=[];return J(e,function(o,i,u){r.push(t.call(n,i,u,e))},void 0),r}),X=Object.create||function(t){function n(){}return n.prototype=t,new n},Y=Object.defineProperty||function(t,n,e){return t[n]=e.value,t},Z=t(Object.prototype.hasOwnProperty),tt=Object.keys||function(t){var n=[];for(var e in t)Z(t,e)&&n.push(e);return n},nt=t(Object.prototype.toString);V="undefined"!=typeof ReturnValue?ReturnValue:function(t){this.value=t};var et="From previous event:";s.resolve=s,s.nextTick=L,s.longStackSupport=!1;var rt=1;"object"===("undefined"==typeof process?"undefined":_typeof(process))&&process&&process.env&&process.env.Q_DEBUG&&(s.longStackSupport=!0),s.defer=p,p.prototype.makeNodeResolver=function(){var t=this;return function(n,e){n?t.reject(n):arguments.length>2?t.resolve(z(arguments,1)):t.resolve(e)}},s.Promise=a,s.promise=a,a.race=l,a.all=D,a.reject=T,a.resolve=s,s.passByCopy=function(t){return t},d.prototype.passByCopy=function(){return this},s.join=function(t,n){return s(t).join(n)},d.prototype.join=function(t){return s([this,t]).spread(function(t,n){if(t===n)return t;throw new Error("Q can't join: not the same: "+t+" "+n)})},s.race=l,d.prototype.race=function(){return this.then(s.race)},s.makePromise=d,d.prototype.toString=function(){return"[object Promise]"},d.prototype.then=function(t,n,e){function o(n){try{return"function"==typeof t?t(n):n}catch(t){return T(t)}}function i(t){if("function"==typeof n){r(t,c);try{return n(t)}catch(t){return T(t)}}return T(t)}function u(t){return"function"==typeof e?e(t):t}var c=this,f=p(),a=!1;return s.nextTick(function(){c.promiseDispatch(function(t){a||(a=!0,f.resolve(o(t)))},"when",[function(t){a||(a=!0,f.resolve(i(t)))}])}),c.promiseDispatch(void 0,"when",[void 0,function(t){var n,e=!1;try{n=u(t)}catch(t){if(e=!0,!s.onerror)throw t;s.onerror(t)}e||f.notify(n)}]),f.promise},s.tap=function(t,n){return s(t).tap(n)},d.prototype.tap=function(t){return t=s(t),this.then(function(n){return t.fcall(n).thenResolve(n)})},s.when=y,d.prototype.thenResolve=function(t){return this.then(function(){return t})},s.thenResolve=function(t,n){return s(t).thenResolve(n)},d.prototype.thenReject=function(t){return this.then(function(){throw t})},s.thenReject=function(t,n){return s(t).thenReject(n)},s.nearer=h,s.isPromise=v,s.isPromiseAlike=m,s.isPending=k,d.prototype.isPending=function(){return"pending"===this.inspect().state},s.isFulfilled=w,d.prototype.isFulfilled=function(){return"fulfilled"===this.inspect().state},s.isRejected=j,d.prototype.isRejected=function(){return"rejected"===this.inspect().state};var ot=[],it=[],ut=[],ct=!0;s.resetUnhandledRejections=b,s.getUnhandledReasons=function(){return ot.slice()},s.stopUnhandledRejectionTracking=function(){b(),ct=!1},b(),s.reject=T,s.fulfill=R,s.master=_,s.spread=E,d.prototype.spread=function(t,n){return this.all().then(function(n){return t.apply(void 0,n)},n)},s.async=O,s.spawn=C,s.return=Q,s.promised=N,s.dispatch=P,d.prototype.dispatch=function(t,n){var e=this,r=p();return s.nextTick(function(){e.promiseDispatch(r.resolve,t,n)}),r.promise},s.get=function(t,n){return s(t).dispatch("get",[n])},d.prototype.get=function(t){return this.dispatch("get",[t])},s.set=function(t,n,e){return s(t).dispatch("set",[n,e])},d.prototype.set=function(t,n){return this.dispatch("set",[t,n])},s.del=s.delete=function(t,n){return s(t).dispatch("delete",[n])},d.prototype.del=d.prototype.delete=function(t){return this.dispatch("delete",[t])},s.mapply=s.post=function(t,n,e){return s(t).dispatch("post",[n,e])},d.prototype.mapply=d.prototype.post=function(t,n){return this.dispatch("post",[t,n])},s.send=s.mcall=s.invoke=function(t,n){return s(t).dispatch("post",[n,z(arguments,2)])},d.prototype.send=d.prototype.mcall=d.prototype.invoke=function(t){return this.dispatch("post",[t,z(arguments,1)])},s.fapply=function(t,n){return s(t).dispatch("apply",[void 0,n])},d.prototype.fapply=function(t){return this.dispatch("apply",[void 0,t])},s.try=s.fcall=function(t){return s(t).dispatch("apply",[void 0,z(arguments,1)])},d.prototype.fcall=function(){return this.dispatch("apply",[void 0,z(arguments)])},s.fbind=function(t){var n=s(t),e=z(arguments,1);return function(){return n.dispatch("apply",[this,e.concat(z(arguments))])}},d.prototype.fbind=function(){var t=this,n=z(arguments);return function(){return t.dispatch("apply",[this,n.concat(z(arguments))])}},s.keys=function(t){return s(t).dispatch("keys",[])},d.prototype.keys=function(){return this.dispatch("keys",[])},s.all=D,d.prototype.all=function(){return D(this)},s.any=A,d.prototype.any=function(){return A(this)},s.allResolved=function(t,n,e){return function(){return"undefined"!=typeof console&&"function"==typeof console.warn&&console.warn(n+" is deprecated, use "+e+" instead.",new Error("").stack),t.apply(t,arguments)}}(I,"allResolved","allSettled"),d.prototype.allResolved=function(){return I(this)},s.allSettled=U,d.prototype.allSettled=function(){return this.then(function(t){return D(W(t,function(t){function n(){return t.inspect()}return t=s(t),t.then(n,n)}))})},s.fail=s.catch=function(t,n){return s(t).then(void 0,n)},d.prototype.fail=d.prototype.catch=function(t){return this.then(void 0,t)},s.progress=F,d.prototype.progress=function(t){return this.then(void 0,void 0,t)},s.fin=s.finally=function(t,n){return s(t).finally(n)},d.prototype.fin=d.prototype.finally=function(t){if(!t||"function"!=typeof t.apply)throw new Error("Q can't apply finally callback");return t=s(t),this.then(function(n){return t.fcall().then(function(){return n})},function(n){return t.fcall().then(function(){throw n})})},s.done=function(t,n,e,r){return s(t).done(n,e,r)},d.prototype.done=function(t,n,e){var o=function(t){s.nextTick(function(){if(r(t,i),!s.onerror)throw t;s.onerror(t)})},i=t||n||e?this.then(t,n,e):this;"object"===("undefined"==typeof process?"undefined":_typeof(process))&&process&&process.domain&&(o=process.domain.bind(o)),i.then(void 0,o)},s.timeout=function(t,n,e){return s(t).timeout(n,e)},d.prototype.timeout=function(t,n){var e=p(),r=setTimeout(function(){n&&"string"!=typeof n||(n=new Error(n||"Timed out after "+t+" ms"),n.code="ETIMEDOUT"),e.reject(n)},t);return this.then(function(t){clearTimeout(r),e.resolve(t)},function(t){clearTimeout(r),e.reject(t)},e.notify),e.promise},s.delay=function(t,n){return void 0===n&&(n=t,t=void 0),s(t).delay(n)},d.prototype.delay=function(t){return this.then(function(n){var e=p();return setTimeout(function(){e.resolve(n)},t),e.promise})},s.nfapply=function(t,n){return s(t).nfapply(n)},d.prototype.nfapply=function(t){var n=p(),e=z(t);return e.push(n.makeNodeResolver()),this.fapply(e).fail(n.reject),n.promise},s.nfcall=function(t){var n=z(arguments,1);return s(t).nfapply(n)},d.prototype.nfcall=function(){var t=z(arguments),n=p();return t.push(n.makeNodeResolver()),this.fapply(t).fail(n.reject),n.promise},s.nfbind=s.denodeify=function(t){if(void 0===t)throw new Error("Q can't wrap an undefined function");var n=z(arguments,1);return function(){var e=n.concat(z(arguments)),r=p();return e.push(r.makeNodeResolver()),s(t).fapply(e).fail(r.reject),r.promise}},d.prototype.nfbind=d.prototype.denodeify=function(){var t=z(arguments);return t.unshift(this),s.denodeify.apply(void 0,t)},s.nbind=function(t,n){var e=z(arguments,2);return function(){function r(){return t.apply(n,arguments)}var o=e.concat(z(arguments)),i=p();return o.push(i.makeNodeResolver()),s(r).fapply(o).fail(i.reject),i.promise}},d.prototype.nbind=function(){var t=z(arguments,0);return t.unshift(this),s.nbind.apply(void 0,t)},s.nmapply=s.npost=function(t,n,e){return s(t).npost(n,e)},d.prototype.nmapply=d.prototype.npost=function(t,n){var e=z(n||[]),r=p();return e.push(r.makeNodeResolver()),this.dispatch("post",[t,e]).fail(r.reject),r.promise},s.nsend=s.nmcall=s.ninvoke=function(t,n){var e=z(arguments,2),r=p();return e.push(r.makeNodeResolver()),s(t).dispatch("post",[n,e]).fail(r.reject),r.promise},d.prototype.nsend=d.prototype.nmcall=d.prototype.ninvoke=function(t){var n=z(arguments,1),e=p();return n.push(e.makeNodeResolver()),this.dispatch("post",[t,n]).fail(e.reject),e.promise},s.nodeify=M,d.prototype.nodeify=function(t){if(!t)return this;this.then(function(n){s.nextTick(function(){t(null,n)})},function(n){s.nextTick(function(){t(n)})})},s.noConflict=function(){throw new Error("Q.noConflict only works when Q is used as a global")};var ft=f();return s});
+/*! http://mths.be/fromcodepoint v0.2.1 by @mathias */
+if (!String.fromCodePoint) {
+	(function() {
+		var defineProperty = (function() {
+			// IE 8 only supports `Object.defineProperty` on DOM elements
+			try {
+				var object = {};
+				var $defineProperty = Object.defineProperty;
+				var result = $defineProperty(object, object, object) && $defineProperty;
+			} catch(error) {}
+			return result;
+		}());
+		var stringFromCharCode = String.fromCharCode;
+		var floor = Math.floor;
+		var fromCodePoint = function(_) {
+			var MAX_SIZE = 0x4000;
+			var codeUnits = [];
+			var highSurrogate;
+			var lowSurrogate;
+			var index = -1;
+			var length = arguments.length;
+			if (!length) {
+				return '';
+			}
+			var result = '';
+			while (++index < length) {
+				var codePoint = Number(arguments[index]);
+				if (
+					!isFinite(codePoint) || // `NaN`, `+Infinity`, or `-Infinity`
+					codePoint < 0 || // not a valid Unicode code point
+					codePoint > 0x10FFFF || // not a valid Unicode code point
+					floor(codePoint) != codePoint // not an integer
+				) {
+					throw RangeError('Invalid code point: ' + codePoint);
+				}
+				if (codePoint <= 0xFFFF) { // BMP code point
+					codeUnits.push(codePoint);
+				} else { // Astral code point; split in surrogate halves
+					// http://mathiasbynens.be/notes/javascript-encoding#surrogate-formulae
+					codePoint -= 0x10000;
+					highSurrogate = (codePoint >> 10) + 0xD800;
+					lowSurrogate = (codePoint % 0x400) + 0xDC00;
+					codeUnits.push(highSurrogate, lowSurrogate);
+				}
+				if (index + 1 == length || codeUnits.length > MAX_SIZE) {
+					result += stringFromCharCode.apply(null, codeUnits);
+					codeUnits.length = 0;
+				}
+			}
+			return result;
+		};
+		if (defineProperty) {
+			defineProperty(String, 'fromCodePoint', {
+				'value': fromCodePoint,
+				'configurable': true,
+				'writable': true
+			});
+		} else {
+			String.fromCodePoint = fromCodePoint;
+		}
+	}());
+}
 
-}).call(this,require('_process'))
-},{"_process":7}],7:[function(require,module,exports){
-function defaultSetTimout(){throw new Error("setTimeout has not been defined")}function defaultClearTimeout(){throw new Error("clearTimeout has not been defined")}function runTimeout(e){if(cachedSetTimeout===setTimeout)return setTimeout(e,0);if((cachedSetTimeout===defaultSetTimout||!cachedSetTimeout)&&setTimeout)return cachedSetTimeout=setTimeout,setTimeout(e,0);try{return cachedSetTimeout(e,0)}catch(t){try{return cachedSetTimeout.call(null,e,0)}catch(t){return cachedSetTimeout.call(this,e,0)}}}function runClearTimeout(e){if(cachedClearTimeout===clearTimeout)return clearTimeout(e);if((cachedClearTimeout===defaultClearTimeout||!cachedClearTimeout)&&clearTimeout)return cachedClearTimeout=clearTimeout,clearTimeout(e);try{return cachedClearTimeout(e)}catch(t){try{return cachedClearTimeout.call(null,e)}catch(t){return cachedClearTimeout.call(this,e)}}}function cleanUpNextTick(){draining&&currentQueue&&(draining=!1,currentQueue.length?queue=currentQueue.concat(queue):queueIndex=-1,queue.length&&drainQueue())}function drainQueue(){if(!draining){var e=runTimeout(cleanUpNextTick);draining=!0;for(var t=queue.length;t;){for(currentQueue=queue,queue=[];++queueIndex<t;)currentQueue&&currentQueue[queueIndex].run();queueIndex=-1,t=queue.length}currentQueue=null,draining=!1,runClearTimeout(e)}}function Item(e,t){this.fun=e,this.array=t}function noop(){}var process=module.exports={},cachedSetTimeout,cachedClearTimeout;!function(){try{cachedSetTimeout="function"==typeof setTimeout?setTimeout:defaultSetTimout}catch(e){cachedSetTimeout=defaultSetTimout}try{cachedClearTimeout="function"==typeof clearTimeout?clearTimeout:defaultClearTimeout}catch(e){cachedClearTimeout=defaultClearTimeout}}();var queue=[],draining=!1,currentQueue,queueIndex=-1;process.nextTick=function(e){var t=new Array(arguments.length-1);if(arguments.length>1)for(var r=1;r<arguments.length;r++)t[r-1]=arguments[r];queue.push(new Item(e,t)),1!==queue.length||draining||runTimeout(drainQueue)},Item.prototype.run=function(){this.fun.apply(null,this.array)},process.title="browser",process.browser=!0,process.env={},process.argv=[],process.version="",process.versions={},process.on=noop,process.addListener=noop,process.once=noop,process.off=noop,process.removeListener=noop,process.removeAllListeners=noop,process.emit=noop,process.prependListener=noop,process.prependOnceListener=noop,process.listeners=function(e){return[]},process.binding=function(e){throw new Error("process.binding is not supported")},process.cwd=function(){return"/"},process.chdir=function(e){throw new Error("process.chdir is not supported")},process.umask=function(){return 0};
+},{}],7:[function(require,module,exports){
+'use strict';
 
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+require('string.fromcodepoint');
+
+/**
+ * \\ - matches the backslash which indicates the beginning of an escape sequence
+ * (
+ *   u\{([0-9A-Fa-f]+)\} - first alternative; matches the variable-length hexadecimal escape sequence (\u{ABCD0})
+ * |
+ *   u([0-9A-Fa-f]{4}) - second alternative; matches the 4-digit hexadecimal escape sequence (\uABCD)
+ * |
+ *   x([0-9A-Fa-f]{2}) - third alternative; matches the 2-digit hexadecimal escape sequence (\xA5)
+ * |
+ *   ([1-7][0-7]{0,2}|[0-7]{2,3}) - fourth alternative; matches the up-to-3-digit octal escape sequence (\5 or \512)
+ * |
+ *   (['"tbrnfv0\\]) - fifth alternative; matches the special escape characters (\t, \n and so on)
+ * |
+ *   \U([0-9A-Fa-f]+) - sixth alternative; matches the 8-digit hexadecimal escape sequence used by python (\U0001F3B5)
+ * )
+ */
+var jsEscapeRegex = /\\(u\{([0-9A-Fa-f]+)\}|u([0-9A-Fa-f]{4})|x([0-9A-Fa-f]{2})|([1-7][0-7]{0,2}|[0-7]{2,3})|(['"tbrnfv0\\]))|\\U([0-9A-Fa-f]{8})/g;
+
+var usualEscapeSequences = {
+    '0': '\0',
+    'b': '\b',
+    'f': '\f',
+    'n': '\n',
+    'r': '\r',
+    't': '\t',
+    'v': '\v',
+    '\'': '\'',
+    '"': '"',
+    '\\': '\\'
+};
+
+var fromHex = function fromHex(str) {
+    return String.fromCodePoint(parseInt(str, 16));
+};
+var fromOct = function fromOct(str) {
+    return String.fromCodePoint(parseInt(str, 8));
+};
+
+exports.default = function (string) {
+    return string.replace(jsEscapeRegex, function (_, __, varHex, longHex, shortHex, octal, specialCharacter, python) {
+        if (varHex !== undefined) {
+            return fromHex(varHex);
+        } else if (longHex !== undefined) {
+            return fromHex(longHex);
+        } else if (shortHex !== undefined) {
+            return fromHex(shortHex);
+        } else if (octal !== undefined) {
+            return fromOct(octal);
+        } else if (python !== undefined) {
+            return fromHex(python);
+        } else {
+            return usualEscapeSequences[specialCharacter];
+        }
+    });
+};
+
+module.exports = exports['default'];
+},{"string.fromcodepoint":6}],8:[function(require,module,exports){
+(function (global){
+/*! https://mths.be/utf8js v2.1.2 by @mathias */
+;(function(root) {
+
+	// Detect free variables `exports`
+	var freeExports = typeof exports == 'object' && exports;
+
+	// Detect free variable `module`
+	var freeModule = typeof module == 'object' && module &&
+		module.exports == freeExports && module;
+
+	// Detect free variable `global`, from Node.js or Browserified code,
+	// and use it as `root`
+	var freeGlobal = typeof global == 'object' && global;
+	if (freeGlobal.global === freeGlobal || freeGlobal.window === freeGlobal) {
+		root = freeGlobal;
+	}
+
+	/*--------------------------------------------------------------------------*/
+
+	var stringFromCharCode = String.fromCharCode;
+
+	// Taken from https://mths.be/punycode
+	function ucs2decode(string) {
+		var output = [];
+		var counter = 0;
+		var length = string.length;
+		var value;
+		var extra;
+		while (counter < length) {
+			value = string.charCodeAt(counter++);
+			if (value >= 0xD800 && value <= 0xDBFF && counter < length) {
+				// high surrogate, and there is a next character
+				extra = string.charCodeAt(counter++);
+				if ((extra & 0xFC00) == 0xDC00) { // low surrogate
+					output.push(((value & 0x3FF) << 10) + (extra & 0x3FF) + 0x10000);
+				} else {
+					// unmatched surrogate; only append this code unit, in case the next
+					// code unit is the high surrogate of a surrogate pair
+					output.push(value);
+					counter--;
+				}
+			} else {
+				output.push(value);
+			}
+		}
+		return output;
+	}
+
+	// Taken from https://mths.be/punycode
+	function ucs2encode(array) {
+		var length = array.length;
+		var index = -1;
+		var value;
+		var output = '';
+		while (++index < length) {
+			value = array[index];
+			if (value > 0xFFFF) {
+				value -= 0x10000;
+				output += stringFromCharCode(value >>> 10 & 0x3FF | 0xD800);
+				value = 0xDC00 | value & 0x3FF;
+			}
+			output += stringFromCharCode(value);
+		}
+		return output;
+	}
+
+	function checkScalarValue(codePoint) {
+		if (codePoint >= 0xD800 && codePoint <= 0xDFFF) {
+			throw Error(
+				'Lone surrogate U+' + codePoint.toString(16).toUpperCase() +
+				' is not a scalar value'
+			);
+		}
+	}
+	/*--------------------------------------------------------------------------*/
+
+	function createByte(codePoint, shift) {
+		return stringFromCharCode(((codePoint >> shift) & 0x3F) | 0x80);
+	}
+
+	function encodeCodePoint(codePoint) {
+		if ((codePoint & 0xFFFFFF80) == 0) { // 1-byte sequence
+			return stringFromCharCode(codePoint);
+		}
+		var symbol = '';
+		if ((codePoint & 0xFFFFF800) == 0) { // 2-byte sequence
+			symbol = stringFromCharCode(((codePoint >> 6) & 0x1F) | 0xC0);
+		}
+		else if ((codePoint & 0xFFFF0000) == 0) { // 3-byte sequence
+			checkScalarValue(codePoint);
+			symbol = stringFromCharCode(((codePoint >> 12) & 0x0F) | 0xE0);
+			symbol += createByte(codePoint, 6);
+		}
+		else if ((codePoint & 0xFFE00000) == 0) { // 4-byte sequence
+			symbol = stringFromCharCode(((codePoint >> 18) & 0x07) | 0xF0);
+			symbol += createByte(codePoint, 12);
+			symbol += createByte(codePoint, 6);
+		}
+		symbol += stringFromCharCode((codePoint & 0x3F) | 0x80);
+		return symbol;
+	}
+
+	function utf8encode(string) {
+		var codePoints = ucs2decode(string);
+		var length = codePoints.length;
+		var index = -1;
+		var codePoint;
+		var byteString = '';
+		while (++index < length) {
+			codePoint = codePoints[index];
+			byteString += encodeCodePoint(codePoint);
+		}
+		return byteString;
+	}
+
+	/*--------------------------------------------------------------------------*/
+
+	function readContinuationByte() {
+		if (byteIndex >= byteCount) {
+			throw Error('Invalid byte index');
+		}
+
+		var continuationByte = byteArray[byteIndex] & 0xFF;
+		byteIndex++;
+
+		if ((continuationByte & 0xC0) == 0x80) {
+			return continuationByte & 0x3F;
+		}
+
+		// If we end up here, it’s not a continuation byte
+		throw Error('Invalid continuation byte');
+	}
+
+	function decodeSymbol() {
+		var byte1;
+		var byte2;
+		var byte3;
+		var byte4;
+		var codePoint;
+
+		if (byteIndex > byteCount) {
+			throw Error('Invalid byte index');
+		}
+
+		if (byteIndex == byteCount) {
+			return false;
+		}
+
+		// Read first byte
+		byte1 = byteArray[byteIndex] & 0xFF;
+		byteIndex++;
+
+		// 1-byte sequence (no continuation bytes)
+		if ((byte1 & 0x80) == 0) {
+			return byte1;
+		}
+
+		// 2-byte sequence
+		if ((byte1 & 0xE0) == 0xC0) {
+			byte2 = readContinuationByte();
+			codePoint = ((byte1 & 0x1F) << 6) | byte2;
+			if (codePoint >= 0x80) {
+				return codePoint;
+			} else {
+				throw Error('Invalid continuation byte');
+			}
+		}
+
+		// 3-byte sequence (may include unpaired surrogates)
+		if ((byte1 & 0xF0) == 0xE0) {
+			byte2 = readContinuationByte();
+			byte3 = readContinuationByte();
+			codePoint = ((byte1 & 0x0F) << 12) | (byte2 << 6) | byte3;
+			if (codePoint >= 0x0800) {
+				checkScalarValue(codePoint);
+				return codePoint;
+			} else {
+				throw Error('Invalid continuation byte');
+			}
+		}
+
+		// 4-byte sequence
+		if ((byte1 & 0xF8) == 0xF0) {
+			byte2 = readContinuationByte();
+			byte3 = readContinuationByte();
+			byte4 = readContinuationByte();
+			codePoint = ((byte1 & 0x07) << 0x12) | (byte2 << 0x0C) |
+				(byte3 << 0x06) | byte4;
+			if (codePoint >= 0x010000 && codePoint <= 0x10FFFF) {
+				return codePoint;
+			}
+		}
+
+		throw Error('Invalid UTF-8 detected');
+	}
+
+	var byteArray;
+	var byteCount;
+	var byteIndex;
+	function utf8decode(byteString) {
+		byteArray = ucs2decode(byteString);
+		byteCount = byteArray.length;
+		byteIndex = 0;
+		var codePoints = [];
+		var tmp;
+		while ((tmp = decodeSymbol()) !== false) {
+			codePoints.push(tmp);
+		}
+		return ucs2encode(codePoints);
+	}
+
+	/*--------------------------------------------------------------------------*/
+
+	var utf8 = {
+		'version': '2.1.2',
+		'encode': utf8encode,
+		'decode': utf8decode
+	};
+
+	// Some AMD build optimizers, like r.js, check for specific condition patterns
+	// like the following:
+	if (
+		typeof define == 'function' &&
+		typeof define.amd == 'object' &&
+		define.amd
+	) {
+		define(function() {
+			return utf8;
+		});
+	}	else if (freeExports && !freeExports.nodeType) {
+		if (freeModule) { // in Node.js or RingoJS v0.8.0+
+			freeModule.exports = utf8;
+		} else { // in Narwhal or RingoJS v0.7.0-
+			var object = {};
+			var hasOwnProperty = object.hasOwnProperty;
+			for (var key in utf8) {
+				hasOwnProperty.call(utf8, key) && (freeExports[key] = utf8[key]);
+			}
+		}
+	} else { // in Rhino or a web browser
+		root.utf8 = utf8;
+	}
+
+}(this));
+
+}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{}]},{},[1]);

@@ -1,7 +1,8 @@
 
 
-assets/bundle.js: DemoCtrl.js node_modules
-	browserify DemoCtrl.js -g babelify -g uglifyify -o assets/bundle.js
+assets/bundle.min.js: DemoCtrl.js node_modules
+	node_modules/browserify/bin/cmd.js DemoCtrl.js -o assets/bundle.js
+	node_modules/uglify-es/bin/uglifyjs -cm < assets/bundle.js > assets/bundle.min.js
 
 
 node_modules: package.json
