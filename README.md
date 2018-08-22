@@ -13,7 +13,6 @@ npm install dirty-json
 
 A JSON parser that tries to handle non-conforming or otherwise invalid JSON.
 
-
 You can play around with a demo here: [http://rmarcus.info/dirty-json/](http://rmarcus.info/dirty-json)
 
 You might also be interested in [my blog post about the parser](http://rmarcus.info/blog/2014/10/05/dirty-json-parser.html).
