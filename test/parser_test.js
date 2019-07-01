@@ -548,6 +548,14 @@ describe("parser", function () {
                 done
             );
         });
+
+        it("should handle ticket #16", done => {
+            compareResultsToValid(
+                ' [ "key", test',
+                ' ["key", "test"]',
+                done
+            );
+        });
     });
 
     describe("should throw exceptions for JSON that is too malformed to deal with", () => {
