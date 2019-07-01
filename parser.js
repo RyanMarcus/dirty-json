@@ -64,7 +64,6 @@ function log(str) {
 }
 
 
-
 module.exports.parse = parse;
 function parse(text) {
     let stack = [];
