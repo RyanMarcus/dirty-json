@@ -77,6 +77,16 @@ function parse(text) {
 
     lexer.lexString(text, emit);
 
+    // ensure that if we started with a LB or LCB, we end with a
+    // RB or RCB.
+    if (tokens[0].type == LEX_LB && tokens.last(0).type != LEX_RB) {
+        tokens.push({ type: LEX_RB, value: "]", row: -1, col: -1});
+    }
+
+    if (tokens[0].type == LEX_LCB && tokens.last(0).type != LEX_RCB) {
+        tokens.push({ type: LEX_RCB, value: "}", row: -1, col: -1});
+    }
+
 
     for (let i = 0; i < tokens.length; i++) {
         log("Shifting " + tokens[i].type);

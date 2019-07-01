@@ -524,6 +524,30 @@ describe("parser", function () {
                 done
             );
         });
+
+        it("should handle ticket #16", done => {
+            compareResultsToValid(
+                ' { "key": "<div class="coolCSS>text</div>" }',
+                ' { "key": "<div class=\\"coolCSS>text</div>\\" }" }',
+                done
+            );
+        });
+
+        it("should handle ticket #16", done => {
+            compareResultsToValid(
+                ' { "key": "test"',
+                ' { "key": "test" } ',
+                done
+            );
+        });
+
+        it("should handle ticket #16", done => {
+            compareResultsToValid(
+                ' { "key": test',
+                ' { "key": "test" } ',
+                done
+            );
+        });
     });
 
     describe("should throw exceptions for JSON that is too malformed to deal with", () => {
