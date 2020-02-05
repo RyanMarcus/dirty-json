@@ -73,7 +73,6 @@ function parse(text) {
         tokens.push(t);
     };
 
-
     lexer.lexString(text, emit);
 
     // ensure that if we started with a LB or LCB, we end with a
@@ -222,7 +221,9 @@ function reduce(stack) {
             log("Error rule 3");
             let middleVal = stack.pop();
             let oldLastVal = stack.peek().value.pop();
-            oldLastVal.value +=  '"' + middleVal.value + '"';
+            const qChar = next.single ? "'" : '"';
+            
+            oldLastVal.value +=  qChar + middleVal.value + qChar;
             oldLastVal.value += next.value;
             
             stack.peek().value.push(oldLastVal);

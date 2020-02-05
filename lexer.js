@@ -81,14 +81,14 @@ function getLexer(string) {
     let col = 0;
     let row = 0;
     
-    lexer.addRule(/"((?:\\.|[^"])*)($|")/, (lexeme, txt) => {
+    lexer.addRule(/"((?:\\.|[^"])*?)($|")/, (lexeme, txt) => {
         col += lexeme.length;
-        return {type: LEX_QUOTE, value: parseString(txt), row, col};
+        return {type: LEX_QUOTE, value: parseString(txt), row, col, single: false};
     });
 
-    lexer.addRule(/'((?:\\.|[^'])*)($|')/, (lexeme, txt) => {
+    lexer.addRule(/'((?:\\.|[^'])*?)($|'|(",?[ \t]*\n))/, (lexeme, txt) => {
         col += lexeme.length;
-        return {type: LEX_QUOTE, value: parseString(txt), row, col};
+        return {type: LEX_QUOTE, value: parseString(txt), row, col, single: true};
     });
 
     // floats with a dot

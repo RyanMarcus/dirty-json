@@ -568,6 +568,14 @@ describe("parser", function () {
                 done
             );
         });
+
+        it("should handle ticket #17 (unmatched single quotes, i.e. contractions)", done => {
+            compareResultsToValid(
+                '{"key": "this "isn\'t valid"",\n "other": true}',
+                '{ "key": "this \'isn\'t valid\\"", "other": true }',
+                done
+            );
+        });
     });
 
     describe("should throw exceptions for JSON that is too malformed to deal with", () => {
