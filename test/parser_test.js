@@ -590,6 +590,33 @@ describe("parser", function () {
             );
         });
 
+        describe("should handle ticket #21 (trailing comma)", () => {
+            it("in objects", done => {
+                compareResultsToValid(
+                    '{"key": 1, "test": 2,}',
+                    '{"key": 1, "test": 2 }',
+                    done
+                );
+            });
+
+            it("in objects with newlines", done => {
+                compareResultsToValid(
+                    '{"key": 1,\n"test": 2,\n}',
+                    '{"key": 1, "test": 2 }',
+                    done
+                );
+            });
+
+            it("in lists", done => {
+                compareResultsToValid(
+                    '["val1", 1,]',
+                    '["val1", 1]',
+                    done
+                );
+            });
+        });
+
+
     });
 
     describe("should throw exceptions for JSON that is too malformed to deal with", () => {

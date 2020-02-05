@@ -486,7 +486,6 @@ function reduce(stack) {
         if (is(stack.peek(), LEX_KEY) && is(stack.last(1), LEX_COLON)) {
             log("Error rule 4");
             let l = stack.pop();
-            //stack.pop();
             stack.push({type: LEX_VALUE, 'value': l.value});
             log("Start subreduce... (" + l.value + ")");
             while(reduce(stack));
@@ -495,6 +494,13 @@ function reduce(stack) {
             return true;
         }
 
+        if (is(stack.peek(), LEX_COMMA)) {
+            log("Error rule 10");
+            stack.pop();
+            stack.push({type: LEX_RCB});
+            return true;
+        }
+        
         throw new Error("Found } that I can't handle at line " +
                         next.row + ":" + next.col);
 
