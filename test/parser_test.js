@@ -25,18 +25,23 @@ const fs = require("fs");
 
 
 function compareResults(json, done) {
-    let result = jeq(dJSON.parse(json, false), JSON.parse(json));
+    let result = jeq(dJSON.parse(json, {"fallback": false}), JSON.parse(json));
     done(result);
 }
 
-function compareResultsToValid(invalid, valid, done) {
+function compareResultsToValid(invalid, valid, done, config) {
     // confirm that the invalid json is invalid
+    let testConfig = { "fallback": false };
+    if (config) {
+        testConfig = {...testConfig, ...config};
+    }
+    
     try {
 	var j = JSON.parse(invalid);
 	// it didn't fail!
 	done("json was valid!");
     } catch (e) {
-	let result = jeq(dJSON.parse(invalid),
+	let result = jeq(dJSON.parse(invalid, testConfig),
                          JSON.parse(valid));
         done(result);
     }
@@ -576,6 +581,15 @@ describe("parser", function () {
                 done
             );
         });
+
+        it("should handle ticket #19 (option for duplicate keys)", done => {
+            compareResultsToValid(
+                '{"key": 1, "key": 2, \'key\': [1, 2, 3]}',
+                '{ "key": { "value": { "value": 1, "next": 2 }, "next": [ 1, 2, 3 ] } }',
+                done, {"duplicateKeys": true}
+            );
+        });
+
     });
 
     describe("should throw exceptions for JSON that is too malformed to deal with", () => {

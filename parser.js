@@ -65,7 +65,7 @@ function log(str) {
 
 
 module.exports.parse = parse;
-function parse(text) {
+function parse(text, dupKeys) {
     let stack = [];
 
     let tokens = [];
@@ -98,7 +98,7 @@ function parse(text) {
         
     }
 
-    return compileOST(stack[0]);
+    return compileOST(stack[0], dupKeys);
 
 }
 
@@ -514,7 +514,7 @@ function reduce(stack) {
 
 
 
-function compileOST(tree) {
+function compileOST(tree, dupKeys) {
     let rawTypes = ["boolean", "number", "string"];
 
     if (rawTypes.indexOf((typeof tree)) != -1)
@@ -536,7 +536,17 @@ function compileOST(tree) {
         if (tree.value === null)
             return {};
         tree.value.forEach(function (i) {
-            toR[i.key] = compileOST(i.value);
+            const key = i.key;
+            const val = compileOST(i.value);
+
+            if (dupKeys && key in toR) {
+                toR[key] = {
+                    "value": toR[key],
+                    "next": val
+                };
+            } else {
+                toR[key] = val;
+            }
         });
         return toR;
     }

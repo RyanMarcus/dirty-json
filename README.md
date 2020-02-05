@@ -69,6 +69,19 @@ console.log(JSON.stringify(r));
 // output: {"test":"each \n on \n new \n line"}
 ```
 
+Optionally, `dirty-json` can handle duplicate keys differently from standard JSON.
+
+```javascript
+const dJSON = require('dirty-json');
+const r = dJSON.parse('{"key": 1, "key": 2, \'key\': [1, 2, 3]}');
+console.log(JSON.stringify(r));
+// output: {"key": [1, 2, 3]}
+
+const r = dJSON.parse('{"key": 1, "key": 2, \'key\': [1, 2, 3]}', {"duplicateKeys": true});
+console.log(JSON.stringify(r));
+// output: { key: { value: { value: 1, next: 2 }, next: [ 1, 2, 3 ] } }
+```
+
 ## But what about THIS ambiguous example?
 Since `dirty-json` is handling malformed JSON, it will not always produce the result that you "think" it should. That's why you should only use this when you absolutely need it. Malformed JSON is malformed for a reason.
 

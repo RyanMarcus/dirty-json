@@ -23,9 +23,20 @@
 let parser = require('./parser');
 
 module.exports.parse = parse;
-function parse(text, fallback) {
+function parse(text, config) {
+    let fallback = true;
+    let duplicateKeys = false;
+
+    if (config) {
+        if (("fallback" in config) && config[fallback] === false) {
+            fallback = false;
+        }
+
+        duplicateKeys = "duplicateKeys" in config && config["duplicateKeys"] === true;
+    }
+
     try {
-        return parser.parse(text);
+        return parser.parse(text, duplicateKeys);
     } catch (e) {
         // our parser threw an error! see if the JSON was valid...
         /* istanbul ignore next */
