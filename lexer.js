@@ -59,13 +59,13 @@ const lexMap = {
 };
 
 const lexSpc = [
-    [/:/, LEX_COLON],
-    [/,/, LEX_COMMA],
-    [/{/, LEX_LCB],
-    [/}/, LEX_RCB],
-    [/\[/, LEX_LB],
-    [/\]/, LEX_RB],
-    [/\./, LEX_DOT] // TODO: remove?
+    [/\s*:\s*/, LEX_COLON],
+    [/\s*,\s*/, LEX_COMMA],
+    [/\s*{\s*/, LEX_LCB],
+    [/\s*}\s*/, LEX_RCB],
+    [/\s*\[\s*/, LEX_LB],
+    [/\s*\]\s*/, LEX_RB],
+    [/\s*\.\s*/, LEX_DOT] // TODO: remove?
 ];
 
 function parseString(str) {
@@ -92,18 +92,18 @@ function getLexer(string) {
     });
 
     // floats with a dot
-    lexer.addRule(/[\-0-9]*\.[0-9]*([eE][\+\-]?)?[0-9]*/, lexeme => {
+    lexer.addRule(/[\-0-9]*\.[0-9]*([eE][\+\-]?)?[0-9]*(?:\s*)/, lexeme => {
         col += lexeme.length;
         return {type: LEX_FLOAT, value: parseFloat(lexeme), row, col};
     });
 
     // floats without a dot but with e notation
-    lexer.addRule(/\-?[0-9]+([eE][\+\-]?)[0-9]*/, lexeme => {
+    lexer.addRule(/\-?[0-9]+([eE][\+\-]?)[0-9]*(?:\s*)/, lexeme => {
         col += lexeme.length;
         return {type: LEX_FLOAT, value: parseFloat(lexeme), row, col};
     });
     
-    lexer.addRule(/\-?[0-9]+/, lexeme => {
+    lexer.addRule(/\-?[0-9]+(?:\s*)/, lexeme => {
         col += lexeme.length;
         return {type: LEX_INT, value: parseInt(lexeme), row, col};
     });
@@ -125,14 +125,18 @@ function getLexer(string) {
         }
     });
 
-    lexer.addRule(/./, lexeme => {
+    
+    lexer.addRule(/\S[ \t]*/, lexeme => {
         col += lexeme.length;
         
         let lt = LEX_TOKEN;
         let val = lexeme;
-
+        
         return {type: lt, value: val, row, col};
     });
+    
+
+
 
     lexer.setInput(string);
 

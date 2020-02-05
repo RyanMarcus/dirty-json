@@ -189,6 +189,10 @@ describe("parser", function () {
 	    compareResults('"test"', done);
 	});
 
+        it('should differentiate strings and special values', function (done) {
+	    compareResults('["false", false, "true", true, "null", null]', done);
+	});
+
 
         describe("should pass the NST / Minefield test cases", function() {
             fs.readdirSync("test/nst").forEach(f => {
@@ -553,6 +557,14 @@ describe("parser", function () {
             compareResultsToValid(
                 ' [ "key", test',
                 ' ["key", "test"]',
+                done
+            );
+        });
+
+        it("should handle ticket #15 (keep whitespace in quotes)", done => {
+            compareResultsToValid(
+                '{"claim": ""this is a test" of whitespace"}',
+                '{"claim": "\\"this is a test\\" of whitespace"}',
                 done
             );
         });

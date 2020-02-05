@@ -108,20 +108,20 @@ function reduce(stack) {
 
     switch(next.type) {
     case LEX_KEY:
-        if (next.value == "true") {
+        if (next.value.trim() == "true") {
             log("Rule 5");
             stack.push({'type': LEX_BOOLEAN, 'value': "true"});
             return true;
         }
 
 
-        if (next.value == "false") {
+        if (next.value.trim() == "false") {
             log("Rule 6");
             stack.push({'type': LEX_BOOLEAN, 'value': "false"});
             return true;
         }
 
-        if (next.value == "null") {
+        if (next.value.trim() == "null") {
             log("Rule 7");
             stack.push({'type': LEX_VALUE, 'value': null});
             return true;
