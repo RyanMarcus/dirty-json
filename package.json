@@ -19,8 +19,8 @@
   "license": "AGPL-3.0",
   "dependencies": {
     "lex": "^1.7.9",
-    "unescape-js": "^1.0.8",
-    "utf8": "^2.1.2"
+    "unescape-js": "^1.1.4",
+    "utf8": "^3.0.0"
   },
   "devDependencies": {
     "coveralls": "^3.0.2",
