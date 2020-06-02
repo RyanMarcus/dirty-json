@@ -1,6 +1,6 @@
 {
   "name": "dirty-json",
-  "version": "0.8.0",
+  "version": "0.9.0",
   "description": "A permissive parser for dirty JSON data that does its best",
   "main": "dirty-json.js",
   "engines": {
