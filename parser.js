@@ -46,13 +46,19 @@ const LEX_LB = -4;
 const LEX_DOT = -5;
 
 
-Array.prototype.peek = function() {
-    return this[this.length - 1];
-};
+Object.defineProperty(Array.prototype, 'peek', {
+    enumerable: false,
+    value: function() {
+        return this[this.length - 1];
+    }
+});
 
-Array.prototype.last = function(i) {
-    return this[this.length - (1 + i)];
-};
+Object.defineProperty(Array.prototype, 'last', {
+    enumerable: false,
+    value: function(i) {
+        return this[this.length - (1 + i)];
+    }
+});
 
 
 function is(obj, prop) {
