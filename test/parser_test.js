@@ -516,7 +516,11 @@ describe("parser", function () {
 	    });
 	});
 	
-
+        it('should handle plain strings', done => {
+            const r = dJSON.parse("this is a test");
+            assert.equal("this is a test", r);
+            done();
+        });
 	
     });
 
@@ -616,6 +620,13 @@ describe("parser", function () {
             });
         });
 
+        it("should handle issue #27 (extra whitespace)", done => {
+            compareResultsToValid(
+                'id: \"test\"\nlang: \"en\"\nresult {\n  source: \"agent\"\n}',
+                '{"id":"test","lang":"en","result": { "source":"agent"}}',
+                done
+            );
+        });
 
     });
 

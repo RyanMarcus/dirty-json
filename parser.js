@@ -91,7 +91,6 @@ function parse(text, dupKeys) {
         tokens.push({ type: LEX_RCB, value: "}", row: -1, col: -1});
     }
 
-
     for (let i = 0; i < tokens.length; i++) {
         log("Shifting " + tokens[i].type);
         stack.push(tokens[i]);
@@ -101,7 +100,13 @@ function parse(text, dupKeys) {
             log(stack);
             log("Reducing...");
         }
-        
+    }
+
+    // if everything parsed into a KV list, assume it was an object missing the starting
+    // "{" and ending "}"
+    if (stack.length == 1 && stack[0].type == LEX_KVLIST) {
+        log("Pre-compile error fix 1");
+        stack = [{type: LEX_OBJ, value: stack[0].value}];
     }
 
     return compileOST(stack[0], dupKeys);
@@ -281,6 +286,14 @@ function reduce(stack) {
             stack.push(toPush);
             return true;
         }
+
+        if (is(stack.peek(), LEX_KEY)) {
+            log("Error rule 9");
+            let key = stack.pop();
+            stack.push({'type': LEX_KV, 'key': key.value.trim(), 'value': next});
+            return true;
+        }
+        
         break;
 
     case LEX_CVALUE:
@@ -360,13 +373,9 @@ function reduce(stack) {
             return true;
         }
 
-
-
-
         log("Rule 18");
         stack.push({'type': LEX_KVLIST, 'value': [next]});
         return true;
-
 
     case LEX_KVLIST:
         if (is(stack.peek(), LEX_KVLIST)) {
@@ -374,10 +383,8 @@ function reduce(stack) {
             next.value.forEach(function (i) {
                 stack.peek().value.push(i);
             });
-            
             return true;
         }
-
 
         break;
 
