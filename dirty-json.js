@@ -58,4 +58,3 @@ function parse(text, config) {
 
     }
 }
-

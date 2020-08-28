@@ -246,7 +246,7 @@ describe("parser", function () {
 	    compareResultsToValid('{"test0": false, "test": "some "quoted" text", "test1": 5}', '{"test0": false, "test": "some \\"quoted\\" text", "test1": 5}', done);
 	});
 	
-	it('should handle non-quoted string values', function(done) {
+        it('should handle non-quoted string values', function(done) {
 	    compareResultsToValid('{"this": that}', '{"this": "that"}', done);
 	});
 
@@ -624,6 +624,14 @@ describe("parser", function () {
             compareResultsToValid(
                 'id: \"test\"\nlang: \"en\"\nresult {\n  source: \"agent\"\n}',
                 '{"id":"test","lang":"en","result": { "source":"agent"}}',
+                done
+            );
+        });
+
+        it("should handle issue #28 (non-quoted key and value)", done => {
+            compareResultsToValid(
+                "{type: String, value: 'something'}",
+                '{"type": "String", "value": "something"}',
                 done
             );
         });

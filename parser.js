@@ -524,6 +524,19 @@ function reduce(stack) {
             // do nothing -- so don't push the extra comma onto the stack
             return true;
         }
+
+        if (is(stack.peek(), LEX_KEY)) {
+            log("Comma error rule 2");
+            const key = stack.pop();
+            stack.push({type: LEX_VALUE, value: key.value});
+            
+            log("Starting subreduce...");
+            while (reduce(stack));
+            log ("End subreduce.");
+            
+            stack.push(next);
+            return true;
+        }
     }
 
 
