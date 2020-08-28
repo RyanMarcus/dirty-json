@@ -45,21 +45,24 @@ const LEX_LCB = -3;
 const LEX_LB = -4;
 const LEX_DOT = -5;
 
-
-Object.defineProperty(Array.prototype, 'peek', {
-    enumerable: false,
-    value: function() {
-        return this[this.length - 1];
+function extendArray(arr) {
+    if (arr.peek == null) {
+        Object.defineProperty(arr, 'peek', {
+            enumerable: false,
+            value: function() {
+                return this[this.length - 1];
+            }
+        });
     }
-});
-
-Object.defineProperty(Array.prototype, 'last', {
-    enumerable: false,
-    value: function(i) {
-        return this[this.length - (1 + i)];
+    if (arr.last == null) {
+        Object.defineProperty(arr, 'last', {
+            enumerable: false,
+            value: function(i) {
+                return this[this.length - (1 + i)];
+            }
+        });
     }
-});
-
+}
 
 function is(obj, prop) {
     return (obj && obj.hasOwnProperty("type") && obj.type == prop);
@@ -75,6 +78,10 @@ function parse(text, dupKeys) {
     let stack = [];
 
     let tokens = [];
+
+    extendArray(stack);
+    extendArray(tokens);
+
     let emit = function(t) {
         tokens.push(t);
     };
