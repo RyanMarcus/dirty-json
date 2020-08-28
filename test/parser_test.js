@@ -636,6 +636,25 @@ describe("parser", function () {
             );
         });
 
+        describe("should handle issue #30 (missing values)", () => {
+            it("as the last key of an object", done => {
+                compareResultsToValid(
+                    '{"key": }',
+                    '{"key": null}',
+                    done
+                );
+            });
+
+            it("as an internal key of an object", done => {
+                compareResultsToValid(
+                    '{"key1": "test", "key": , "key2": "test"}',
+                    '{"key1": "test", "key": null, "key2": "test"}',
+                    done
+                );
+            });
+
+        });
+
     });
 
     describe("should throw exceptions for JSON that is too malformed to deal with", () => {

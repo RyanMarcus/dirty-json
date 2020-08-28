@@ -497,7 +497,7 @@ function reduce(stack) {
         }
 
         if (is(stack.peek(), LEX_KEY) && is(stack.last(1), LEX_COLON)) {
-            log("Error rule 4");
+            log("Error rule 4a");
             let l = stack.pop();
             stack.push({type: LEX_VALUE, 'value': l.value});
             log("Start subreduce... (" + l.value + ")");
@@ -507,8 +507,20 @@ function reduce(stack) {
             return true;
         }
 
+        if (is(stack.peek(), LEX_COLON)) {
+            log("Error rule 4b");
+            stack.push({type: LEX_VALUE, value: null});
+
+            log("Starting subreduce...");
+            while (reduce(stack));
+            log("End subreduce.");
+            
+            stack.push({type: LEX_RCB});
+            return true;
+        }
+
         if (is(stack.peek(), LEX_COMMA)) {
-            log("Error rule 10");
+            log("Error rule 10a");
             stack.pop();
             stack.push({type: LEX_RCB});
             return true;
@@ -537,6 +549,19 @@ function reduce(stack) {
             stack.push(next);
             return true;
         }
+
+        if (is(stack.peek(), LEX_COLON)) {
+            log("Comma error rule 3");
+            stack.push({type: LEX_VALUE, value: null});
+            
+            log("Starting subreduce...");
+            while (reduce(stack));
+            log ("End subreduce.");
+            
+            stack.push(next);
+            return true;
+        }
+
     }
 
 
