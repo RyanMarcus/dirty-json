@@ -21,7 +21,7 @@ declare namespace dJSON {
     duplicateKeys?: boolean
   }
 
-  export function parse(text: string, config?: IParseConfig): any
+  export function parse<T = any>(text: string, config?: IParseConfig): T
 }
 
 export = dJSON
